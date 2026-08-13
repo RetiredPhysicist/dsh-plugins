@@ -1,4 +1,4 @@
-# @alex/dsh-browser-run
+# @alex/dsh-cloudflare-browser-run
 
 DeepSeek Harness plugin: **web browsing tools** backed by
 [Cloudflare Browser Run](https://developers.cloudflare.com/browser-run/) —
@@ -26,10 +26,10 @@ WebMCP-enabled sites.
 ## Install
 
 ```sh
-dsh plugin add @alex/dsh-browser-run
+dsh plugin add @alex/dsh-cloudflare-browser-run
 # or, from a cordis.yml composition:
 #   - id: browser-run
-#     name: '@alex/dsh-browser-run'
+#     name: '@alex/dsh-cloudflare-browser-run'
 #     config: { ... }
 ```
 
@@ -39,12 +39,12 @@ Credentials are configured on the plugin row (profile/settings layer):
 
 ```yaml
 - id: browser-run
-  name: '@alex/dsh-browser-run'
+  name: '@alex/dsh-cloudflare-browser-run'
   config:
     cf_api_token_ref: CF_API_TOKEN   # env var name — recommended
     cf_account_id: <your account id>
     # cf_api_token: <direct value>   # fallback when no ref is set
-    # output_dir: /tmp/dsh-browser-run
+    # output_dir: /tmp/dsh-cloudflare-browser-run
 ```
 
 | key | required | meaning |

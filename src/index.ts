@@ -1,4 +1,4 @@
-// @alex/dsh-browser-run — DeepSeek Harness (Cordis) plugin: web browsing
+// @alex/dsh-cloudflare-browser-run — DeepSeek Harness (Cordis) plugin: web browsing
 // tools backed by Cloudflare Browser Run Quick Actions.
 //
 // Tools:
@@ -82,7 +82,7 @@ export function apply(ctx: Context, config: Config): void {
   }
 
   const saveToOutput = (action: Action, data: Uint8Array): string => {
-    const dir = config.output_dir ?? join(tmpdir(), 'dsh-browser-run')
+    const dir = config.output_dir ?? join(tmpdir(), 'dsh-cloudflare-browser-run')
     mkdirSync(dir, { recursive: true })
     const ext = action === 'screenshot' ? 'png' : 'pdf'
     const file = join(dir, `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`)
