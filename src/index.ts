@@ -19,8 +19,8 @@ import { tmpdir } from 'os'
 import { join } from 'path'
 import { browserRunAction, resolveConfig, type Action, type BrowserRunConfig } from './api.js'
 
-export const name = 'browser-run'
-export const inject = ['tools', 'credentials']
+export const name = 'cloudflare-browser-run'
+export const inject = ['tools', 'credentials', 'systemPrompt']
 
 export interface Config {
   /** Env-var name of the Browser Rendering token (recommended; resolved via
@@ -56,7 +56,7 @@ function toolResultText(value: unknown): string {
 
 export function apply(ctx: Context, config: Config): void {
   ctx.systemPrompt.section({
-    name: 'tool:browser-run',
+    name: 'tool:cloudflare-browser-run',
     order: 112,
     text:
       'Use the browse tool to fetch any public web page in a real headless ' +
@@ -96,6 +96,23 @@ export function apply(ctx: Context, config: Config): void {
     ctx.tools.register(defineTool(tool as never))
   }
 
+  // Shared execution path for every tool: resolve the token once, run the
+  // action, then normalize the result into a tool-safe JSON shape.
+  const runAction = async (
+    args: { url?: unknown; action?: unknown },
+  ): Promise<{ ok: boolean; action: Action; path?: string; content?: string; error?: string }> => {
+    const action = (args.action ?? 'markdown') as Action
+    const resolved = await resolveToken()
+    if (!resolved.ok) return { ok: false, action, error: 'error' in resolved ? resolved.error : 'unknown' }
+    const r = await browserRunAction(resolved.config, action, String(args.url ?? ''))
+    if (!r.ok) return { ok: false, action, error: 'error' in r ? r.error : 'unknown' }
+    if (action === 'markdown') {
+      return { ok: true, action, content: String(r.content).slice(0, 100_000) || '(page returned no readable text)' }
+    }
+    const file = saveToOutput(action, r.content as Uint8Array)
+    return { ok: true, action, path: file, content: `${ACTION_LABEL[action]} saved to ${file}` }
+  }
+
   register({
     name: 'browse',
     description:
@@ -106,7 +123,7 @@ export function apply(ctx: Context, config: Config): void {
       url: { type: 'string', required: true, description: 'Public http(s) URL, e.g. https://example.com' },
       action: {
         type: 'string',
-                enum: ['markdown', 'screenshot', 'pdf'],
+        enum: ['markdown', 'screenshot', 'pdf'],
         description: 'What to extract (default markdown)',
       },
     },
@@ -115,18 +132,7 @@ export function apply(ctx: Context, config: Config): void {
       render: (_args, value) => [{ type: 'text', text: toolResultText(value) }],
     },
     isConcurrencySafe: () => true,
-    async execute(args, _exec) {
-      const resolved = await resolveToken()
-      if (!resolved.ok) return { ok: false, action: args.action ?? 'markdown', error: 'error' in resolved ? resolved.error : 'unknown' }
-      const action: Action = (args.action ?? 'markdown') as Action
-      const r = await browserRunAction(resolved.config, action, args.url as string)
-      if (!r.ok) return { ok: false, action, error: 'error' in r ? r.error : 'unknown' }
-      if (action === 'markdown') {
-        return { ok: true, action, content: String(r.content).slice(0, 100_000) || '(page returned no readable text)' }
-      }
-      const file = saveToOutput(action, r.content as Uint8Array)
-      return { ok: true, action, path: file, content: `${ACTION_LABEL[action]} saved to ${file}` }
-    },
+    execute: (args) => runAction(args),
   })
 
   register({
@@ -142,14 +148,7 @@ export function apply(ctx: Context, config: Config): void {
       render: (_args, value) => [{ type: 'text', text: toolResultText(value) }],
     },
     isConcurrencySafe: () => true,
-    async execute(args, _exec) {
-      const resolved = await resolveToken()
-      if (!resolved.ok) return { ok: false, path: '', error: 'error' in resolved ? resolved.error : 'unknown' }
-      const r = await browserRunAction(resolved.config, 'screenshot', args.url as string)
-      if (!r.ok) return { ok: false, path: '', error: 'error' in r ? r.error : 'unknown' }
-      const file = saveToOutput('screenshot', r.content as Uint8Array)
-      return { ok: true, path: file }
-    },
+    execute: (args) => runAction({ ...args, action: 'screenshot' }),
   })
 
   register({
@@ -165,13 +164,6 @@ export function apply(ctx: Context, config: Config): void {
       render: (_args, value) => [{ type: 'text', text: toolResultText(value) }],
     },
     isConcurrencySafe: () => true,
-    async execute(args, _exec) {
-      const resolved = await resolveToken()
-      if (!resolved.ok) return { ok: false, path: '', error: 'error' in resolved ? resolved.error : 'unknown' }
-      const r = await browserRunAction(resolved.config, 'pdf', args.url as string)
-      if (!r.ok) return { ok: false, path: '', error: 'error' in r ? r.error : 'unknown' }
-      const file = saveToOutput('pdf', r.content as Uint8Array)
-      return { ok: true, path: file }
-    },
+    execute: (args) => runAction({ ...args, action: 'pdf' }),
   })
 }

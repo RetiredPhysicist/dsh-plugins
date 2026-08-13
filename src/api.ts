@@ -17,6 +17,7 @@ export type ApiResult =
 
 const MAX_URL_LENGTH = 2048;
 const DEFAULT_API_BASE = "https://api.cloudflare.com/client/v4";
+const FETCH_TIMEOUT_MS = 60_000;
 
 function isPrivateIp(ip: string): boolean {
   if (ip === "::1" || ip === "::" || ip === "0.0.0.0") return true;
@@ -99,6 +100,8 @@ export async function browserRunAction(config: BrowserRunConfig, action: Action,
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
       },
       body: JSON.stringify({ url }),
+      // Hanging API calls must not stall a dsh turn forever.
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
     if (!res.ok) {
       const body = await res.text();

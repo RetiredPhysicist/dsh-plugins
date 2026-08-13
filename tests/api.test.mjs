@@ -90,4 +90,15 @@ describe('browserRunAction', () => {
     assert.equal(r.ok, false)
     assert.match(r.error, /HTTP 403/)
   })
+
+  it('passes an abort timeout signal so a hung API call cannot stall forever', async () => {
+    let signal
+    globalThis.fetch = async (_url, init) => {
+      signal = init?.signal
+      return new Response('ok', { status: 200 })
+    }
+    await browserRunAction(cfg, 'markdown', 'https://example.com')
+    assert.ok(signal instanceof AbortSignal)
+    assert.equal(signal.aborted, false)
+  })
 })

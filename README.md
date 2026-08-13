@@ -21,13 +21,13 @@ The built-in `web_fetch` is a plain HTTP fetch — JS pages come back empty and 
 ## Quick start
 
 ```sh
-dsh plugin add dsh-cloudflare-browser-run
+dsh plugin --profile web add dsh-cloudflare-browser-run
 ```
 
 Configure credentials in your profile/settings layer:
 
 ```yaml
-- id: browser-run
+- id: cloudflare-browser-run
   name: dsh-cloudflare-browser-run
   config:
     cf_api_token_ref: CF_API_TOKEN   # env var name — recommended

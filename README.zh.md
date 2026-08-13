@@ -21,13 +21,13 @@ dsh 内置的 `web_fetch` 只是普通 HTTP fetch——JS 页面拿回来是空�
 ## 快速开始
 
 ```sh
-dsh plugin add dsh-cloudflare-browser-run
+dsh plugin --profile web add dsh-cloudflare-browser-run
 ```
 
 在 profile/settings 层配置凭据:
 
 ```yaml
-- id: browser-run
+- id: cloudflare-browser-run
   name: dsh-cloudflare-browser-run
   config:
     cf_api_token_ref: CF_API_TOKEN   # 推荐:环境变量名

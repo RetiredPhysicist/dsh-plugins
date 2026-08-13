@@ -5,7 +5,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { Context } from '@deepseek-ai/cordis'
-import { apply as applyBrowser, Config as BrowserConfig } from '../src/index.ts'
+import { apply as applyBrowser, Config as BrowserConfig, inject, name } from '../src/index.ts'
 
 function makeCtx() {
   const ctx = new Context()
@@ -26,6 +26,13 @@ function makeCtx() {
 }
 
 describe('dsh-browser-run smoke', () => {
+  it('declares every accessed service in inject', () => {
+    // Real dsh boot fails with "cannot get property X without inject" when a
+    // plugin touches ctx.X without declaring it — stub tests never catch this.
+    assert.deepEqual(inject.sort(), ['credentials', 'systemPrompt', 'tools'])
+    assert.equal(name, 'cloudflare-browser-run')
+  })
+
   it('registers browse/screenshot/pdf tools', () => {
     const { ctx, registered } = makeCtx()
     applyBrowser(ctx, {
