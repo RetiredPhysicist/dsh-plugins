@@ -2,10 +2,10 @@
 # Registers the AnySearch search provider into ctx.web. Configure the API key
 # via a credential ref (recommended) or a direct value:
 #
-#   - id: search
+#   - id: all-search
 #     name: 'dsh-all-search'
 #     config:
 #       api_key_ref: ANYSEARCH_API_KEY   # env var name (recommended)
 - insert:
-    - id: search
+    - id: all-search
       name: 'dsh-all-search'

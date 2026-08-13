@@ -17,13 +17,13 @@ dsh 自带 Exa / Perplexity / DeepSeek 搜索。本插件补 AnySearch:一把 ke
 ## 快速开始
 
 ```sh
-dsh plugin add dsh-all-search
+dsh plugin --profile web add dsh-all-search
 ```
 
 provider 以 `anysearch` 注册到 `ctx.web`,内置的 `web_search` 工具会自动识别,与自带 provider 并存。
 
 ```yaml
-- id: search
+- id: all-search
   name: dsh-all-search
   config:
     api_key_ref: ANYSEARCH_API_KEY   # 推荐:环境变量名

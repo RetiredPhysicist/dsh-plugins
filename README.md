@@ -17,13 +17,13 @@ dsh ships Exa / Perplexity / DeepSeek search. This plugin adds AnySearch: one ke
 ## Quick start
 
 ```sh
-dsh plugin add dsh-all-search
+dsh plugin --profile web add dsh-all-search
 ```
 
 The provider registers as `anysearch` on `ctx.web` — the built-in `web_search` tool picks it up alongside the stock providers.
 
 ```yaml
-- id: search
+- id: all-search
   name: dsh-all-search
   config:
     api_key_ref: ANYSEARCH_API_KEY   # env var name — recommended

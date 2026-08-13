@@ -1,4 +1,4 @@
-// dsh-search — DeepSeek Harness (Cordis) plugin.
+// dsh-all-search — DeepSeek Harness (Cordis) plugin.
 //
 // Registers an AnySearch-backed WebSearchProvider with ctx.web. AnySearch is
 // a single MCP gateway that aggregates exa / tavily / firecrawl / context7
@@ -15,7 +15,7 @@ import z from '@deepseek-ai/schemastery'
 import { credentialRef, type ResolvedCredential } from '@deepseek-ai/dsh-credentials'
 import type { WebSearchProvider, WebSearchRequest, WebSearchResult, WebSearchSource } from '@deepseek-ai/dsh-web'
 
-export const name = 'dsh-search'
+export const name = 'all-search'
 export const inject = ['web', 'credentials']
 
 export interface Config {
