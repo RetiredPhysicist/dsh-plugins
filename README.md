@@ -1,4 +1,4 @@
-# @alex/dsh-atuin-history
+# @alex/dsh-atuin
 
 DeepSeek Harness plugin: every prompt you type into a DSH session (web UI
 included) is appended to your **atuin** shell history, so it shows up in
@@ -23,7 +23,7 @@ contents are never recorded — only your own typed prompts.
 ## Install
 
 ```sh
-dsh plugin add @alex/dsh-atuin-history
+dsh plugin add @alex/dsh-atuin
 ```
 
 Requires a running atuin daemon (standard atuin shell integration sets
@@ -34,7 +34,7 @@ plugin never crashes a session.
 
 ```yaml
 - id: atuin-history
-  name: '@alex/dsh-atuin-history'
+  name: '@alex/dsh-atuin'
   config:
     # atuin_bin: /opt/homebrew/bin/atuin   # default: atuin on PATH
     # deny: "^/clear$,password"             # comma-separated regexes, not recorded
