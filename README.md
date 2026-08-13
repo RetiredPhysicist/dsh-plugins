@@ -1,59 +1,58 @@
+<p align="center">
+  <img src="assets/readme/hero.svg" alt="dsh-all-search — AnySearch web search for DeepSeek Harness" width="100%">
+</p>
+
 # dsh-all-search
 
-给 DeepSeek Harness 加一个 **AnySearch** 搜索 provider,注册进 `ctx.web`。
-AnySearch 是单 MCP 网关,一把 API key 聚合 exa / tavily / firecrawl /
-context7 等多家搜索引擎。
+Adds an **AnySearch** web-search provider to DeepSeek Harness, registered into `ctx.web`. AnySearch is a single MCP gateway that aggregates exa / tavily / firecrawl / context7 behind **one API key**.
 
-> 由 [pi-all-search](https://github.com/RealAlexandreAI/pi-all-search) 移植。
+> Port of [pi-all-search](https://github.com/RealAlexandreAI/pi-all-search).
 
-## 为什么需要它
+[English](README.md) · [中文](README.zh.md)
 
-dsh 自带 Exa / Perplexity / DeepSeek 搜索。本插件补的是 **AnySearch**:
-一把 key 多个后端,不用为每家单独配凭据。
+## Why
 
-## 安装
+dsh ships Exa / Perplexity / DeepSeek search. This plugin adds AnySearch: one key, many backends, no per-backend credentials.
+
+## Quick start
 
 ```sh
 dsh plugin add dsh-all-search
 ```
 
-provider 以 `anysearch` 注册到 `ctx.web`,内置的 `web_search` 工具会自动
-识别,与自带 provider 并存。
-
-## 配置
+The provider registers as `anysearch` on `ctx.web` — the built-in `web_search` tool picks it up alongside the stock providers.
 
 ```yaml
 - id: search
   name: dsh-all-search
   config:
-    api_key_ref: ANYSEARCH_API_KEY   # 推荐:环境变量名
-    # api_key: <直接填 key>          # 备用
-    # base_url: https://api.anysearch.com/mcp
+    api_key_ref: ANYSEARCH_API_KEY   # env var name — recommended
+    # api_key: <direct value>
 ```
 
-| 键 | 必填 | 说明 |
+| key | required | meaning |
 |---|---|---|
-| `api_key_ref` | * | AnySearch key 的环境变量名(推荐,值不落配置) |
-| `api_key` | * | 直接填 key(备用) |
-| `base_url` | – | MCP 端点覆盖(默认官方) |
+| `api_key_ref` | * | env-var name of the AnySearch key (via `ctx.credentials`) |
+| `api_key` | * | direct key value (fallback) |
+| `base_url` | – | MCP endpoint override |
 
-\* 二者填其一。没有 key 时 provider `available() = false`,seam 自动跳过。
+\* one of the two key keys. Without a key the provider reports `available() = false` and the seam skips it.
 
-## 隐私
+## Privacy
 
-- key 每次搜索经 `ctx.credentials` 解析,不写日志
-- 只向 AnySearch 网关发送你的查询词和结果数量
+- The key is resolved per operation via `ctx.credentials` — never logged.
+- Only your query and result count go to the AnySearch gateway.
 
-## 开发
+## Development
 
 ```bash
 npm install
 npm run typecheck
-npm test          # 结果解析 / maxResults 截断 / HTTP 错误
+npm test          # result parsing / maxResults / HTTP errors
 npm run build
 ```
 
-真实搜索集成测试:
+Live search test:
 
 ```bash
 ANYSEARCH_API_KEY=<key> node --import tsx tests/real/real-search.mjs
