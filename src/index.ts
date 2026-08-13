@@ -71,11 +71,19 @@ export function apply(ctx: Context, config: Config): void {
     if (!text) return
     if (maxLen > 0 && text.length > maxLen) text = text.slice(0, maxLen)
     if (denyPatterns.some((re) => re.test(text))) return
-    // atuin history start registers the command; end finalizes it with
-    // timing metadata. The daemon must be running (standard atuin setup).
-    const start = spawn(atuinBin, ['history', 'start', '--', text], { stdio: 'ignore' })
+    // atuin history start registers the command and prints an entry id;
+    // history end finalizes it with exit code and timing (requires the id).
+    // The daemon must be running (standard atuin setup).
+    const start = spawn(atuinBin, ['history', 'start', '--', text])
+    let id = ''
+    start.stdout?.on('data', (d) => {
+      id += String(d)
+    })
     start.on('close', () => {
-      spawn(atuinBin, ['history', 'end'], { stdio: 'ignore' })
+      const trimmed = id.trim()
+      if (trimmed) {
+        spawn(atuinBin, ['history', 'end', '--exit', '0', trimmed], { stdio: 'ignore' })
+      }
     })
     start.on('error', () => {
       // atuin missing / daemon down: silently skip, never crash a session.
