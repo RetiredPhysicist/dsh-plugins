@@ -1,5 +1,5 @@
 {
-  "name": "@alex/dsh-codebuddy",
+  "name": "@alex/dsh-codebuddy-sdk",
   "version": "0.1.0",
   "description": "DeepSeek Harness plugin: CodeBuddy (Tencent Agent SDK) as an LLM provider adapter (ctx.llm). WIP — port of pi-codebuddy-sdk.",
   "type": "module",
