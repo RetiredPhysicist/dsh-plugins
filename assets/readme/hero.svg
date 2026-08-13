@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="100%" role="img" aria-label="dsh-codebuddy-sdk — CodeBuddy as a DeepSeek Harness LLM provider (WIP)">
+  <title>dsh-codebuddy-sdk — CodeBuddy LLM provider (WIP)</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d1117"/>
+      <stop offset="1" stop-color="#161b22"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#4d9fff"/>
+      <stop offset="1" stop-color="#8fc3ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="300" rx="20" fill="url(#bg)"/>
+
+  <text x="64" y="86" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif" font-size="46" font-weight="700" fill="#f5f7fa">dsh-codebuddy-sdk</text>
+  <text x="64" y="128" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif" font-size="24" fill="#9aa7b8">CodeBuddy as an LLM provider</text>
+  <rect x="64" y="150" width="170" height="6" rx="3" fill="url(#accent)"/>
+
+  <!-- code block -->
+  <rect x="64" y="182" width="620" height="92" rx="10" fill="#0d1117" stroke="#30363d" stroke-width="2"/>
+  <text x="88" y="214" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" fill="#9aa7b8">ctx.llm.registerAdapter(['codebuddy'],</text>
+  <text x="88" y="240" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" fill="#9aa7b8">  new CodeBuddyAdapter())</text>
+  <text x="88" y="266" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" fill="#4d9fff">// WIP: placeholder stream</text>
+
+  <!-- WIP badge -->
+  <rect x="740" y="182" width="396" height="92" rx="12" fill="#161b22" stroke="#30363d" stroke-width="2"/>
+  <text x="766" y="222" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif" font-size="28" font-weight="700" fill="#f0883e">WIP</text>
+  <text x="766" y="252" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif" font-size="16" fill="#9aa7b8">real integration lands next</text>
+</svg>
