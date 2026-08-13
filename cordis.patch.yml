@@ -1,0 +1,5 @@
+# Plugin bundle for @alex/dsh-atuin-history.
+# Add this bundle to a profile to append every user prompt to atuin history.
+- insert:
+    - id: atuin-history
+      name: '@alex/dsh-atuin-history'
