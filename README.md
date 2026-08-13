@@ -1,79 +1,62 @@
-# @alex/dsh-all-search
+# dsh-all-search
 
-DeepSeek Harness plugin: **AnySearch-backed web search provider** registered
-into `ctx.web` — a single MCP gateway that aggregates exa / tavily /
-firecrawl / context7 behind one API key.
+给 DeepSeek Harness 加一个 **AnySearch** 搜索 provider,注册进 `ctx.web`。
+AnySearch 是单 MCP 网关,一把 API key 聚合 exa / tavily / firecrawl /
+context7 等多家搜索引擎。
 
-Port of [pi-all-search](https://github.com/RealAlexandreAI/pi-all-search)'s
-AnySearch provider to the dsh web-search seam.
+> 由 [pi-all-search](https://github.com/RealAlexandreAI/pi-all-search) 移植。
 
-## Why
+## 为什么需要它
 
-dsh ships Exa / Perplexity / DeepSeek search providers. This plugin adds
-**AnySearch**: one key, many backends (exa, tavily, firecrawl, context7…),
-and no extra per-backend credentials.
+dsh 自带 Exa / Perplexity / DeepSeek 搜索。本插件补的是 **AnySearch**:
+一把 key 多个后端,不用为每家单独配凭据。
 
-## Install
+## 安装
 
 ```sh
-dsh plugin add @alex/dsh-all-search
+dsh plugin add dsh-all-search
 ```
 
-The provider registers as `anysearch` on `ctx.web`; the built-in
-`web_search` tool picks it up alongside the stock providers.
+provider 以 `anysearch` 注册到 `ctx.web`,内置的 `web_search` 工具会自动
+识别,与自带 provider 并存。
 
-## Configuration
+## 配置
 
 ```yaml
 - id: search
-  name: '@alex/dsh-all-search'
+  name: dsh-all-search
   config:
-    api_key_ref: ANYSEARCH_API_KEY   # env var name — recommended
-    # api_key: <direct value>        # fallback when no ref is set
+    api_key_ref: ANYSEARCH_API_KEY   # 推荐:环境变量名
+    # api_key: <直接填 key>          # 备用
     # base_url: https://api.anysearch.com/mcp
 ```
 
-| key | required | meaning |
+| 键 | 必填 | 说明 |
 |---|---|---|
-| `api_key_ref` | * | env-var name of the AnySearch API key (resolved via `ctx.credentials`) |
-| `api_key` | * | direct API key value (fallback) |
-| `base_url` | – | MCP endpoint override (default `https://api.anysearch.com/mcp`) |
+| `api_key_ref` | * | AnySearch key 的环境变量名(推荐,值不落配置) |
+| `api_key` | * | 直接填 key(备用) |
+| `base_url` | – | MCP 端点覆盖(默认官方) |
 
-\* one of `api_key_ref` / `api_key` is required. Without a key the provider
-is `available() = false` and the seam skips it.
+\* 二者填其一。没有 key 时 provider `available() = false`,seam 自动跳过。
 
-## Privacy
+## 隐私
 
-- The API key is resolved per operation via `ctx.credentials`; never
-  logged, never written by the plugin.
-- Only your search query and result count are sent to the AnySearch MCP
-  gateway.
+- key 每次搜索经 `ctx.credentials` 解析,不写日志
+- 只向 AnySearch 网关发送你的查询词和结果数量
 
-## Real integration
-
-Optional end-to-end tests that hit live services (not part of `npm test`):
-
-```bash
-# dsh-cloudflare-browser-run: real Cloudflare Browser Run API
-DSH_TEST_CF_TOKEN=<token> DSH_TEST_CF_ACCOUNT=<account> node --import tsx tests/real/real-cf.mjs
-
-# dsh-atuin: record into your real atuin database (daemon must run)
-node --import tsx tests/real/real-atuin.mjs
-
-# dsh-all-search: real AnySearch query
-ANYSEARCH_API_KEY=<key> node --import tsx tests/real/real-search.mjs
-
-# dsh-nocturne-memory: real Nocturne MCP server (reuses your pi config)
-node --import tsx tests/real/real-mcp.mjs
-```
-
-## Development
+## 开发
 
 ```bash
 npm install
 npm run typecheck
-npm test          # result parsing, maxResults truncation, HTTP errors
+npm test          # 结果解析 / maxResults 截断 / HTTP 错误
 npm run build
+```
+
+真实搜索集成测试:
+
+```bash
+ANYSEARCH_API_KEY=<key> node --import tsx tests/real/real-search.mjs
 ```
 
 ## License

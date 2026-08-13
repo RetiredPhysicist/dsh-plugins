@@ -1,4 +1,4 @@
-// @alex/dsh-search — DeepSeek Harness (Cordis) plugin.
+// dsh-search — DeepSeek Harness (Cordis) plugin.
 //
 // Registers an AnySearch-backed WebSearchProvider with ctx.web. AnySearch is
 // a single MCP gateway that aggregates exa / tavily / firecrawl / context7
