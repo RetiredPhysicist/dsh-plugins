@@ -1,0 +1,7 @@
+# Plugin bundle for @alex/dsh-codebuddy.
+# Registers the CodeBuddy provider adapter into ctx.llm.
+# WIP: text-only single-turn streaming; tool calls and full message
+# translation land in the next iteration.
+- insert:
+    - id: codebuddy
+      name: '@alex/dsh-codebuddy'
