@@ -30,7 +30,6 @@
   "license": "MIT",
   "dependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
-    "@deepseek-ai/dsh-credentials": "^0.0.1-rc.1",
     "@deepseek-ai/dsh-tools": "^0.0.1-rc.1",
     "@deepseek-ai/schemastery": "^3.18.0"
   },
@@ -47,5 +46,8 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/RealAlexandreAI/dsh-cloudflare-browser-run"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }

@@ -30,7 +30,7 @@ Configure credentials in your profile/settings layer:
 - id: cloudflare-browser-run
   name: dsh-cloudflare-browser-run
   config:
-    cf_api_token_ref: CF_API_TOKEN   # env var name — recommended
+    cf_api_token: <your token>
     cf_account_id: <your account id>
 ```
 
@@ -49,18 +49,15 @@ Account id: `dash.cloudflare.com/<ACCOUNT_ID>/...`.
 
 | key | required | meaning |
 |---|---|---|
-| `cf_api_token_ref` | * | env-var name of the API token (resolved via `ctx.credentials`) |
-| `cf_api_token` | * | direct token value (fallback) |
+| `cf_api_token` | ✅ | your API token (Browser Rendering:Edit) |
 | `cf_account_id` | ✅ | your Cloudflare account id |
 | `cf_api_base` | – | API base override |
 | `output_dir` | – | where screenshots/PDFs land (default OS temp) |
 
-\* one of the two token keys.
-
 ## Privacy
 
 - **Public web only**: every URL passes an SSRF guard (localhost / private IPs / IPv6 literals / userinfo rejected) before the API is called.
-- The token is resolved per operation via `ctx.credentials` — never logged, never stored by the plugin.
+- The token lives only in your config file — never logged, never stored by the plugin.
 - Browser Run identifies itself as a well-behaved bot, the compliant way to fetch.
 
 ## Development

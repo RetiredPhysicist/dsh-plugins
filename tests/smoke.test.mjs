@@ -15,12 +15,6 @@ function makeCtx() {
       registered.push(tool)
     },
   })
-  ctx.provide('credentials', {
-    async resolve(ref) {
-      assert.equal(ref, 'CF_API_TOKEN')
-      return { value: 'test-token', source: 'env' }
-    },
-  })
   ctx.provide('systemPrompt', { section() {} })
   return { ctx, registered }
 }
@@ -29,7 +23,7 @@ describe('dsh-browser-run smoke', () => {
   it('declares every accessed service in inject', () => {
     // Real dsh boot fails with "cannot get property X without inject" when a
     // plugin touches ctx.X without declaring it — stub tests never catch this.
-    assert.deepEqual(inject.sort(), ['credentials', 'systemPrompt', 'tools'])
+    assert.deepEqual(inject.sort(), ['systemPrompt', 'tools'])
     assert.equal(name, 'cloudflare-browser-run')
   })
 
@@ -37,12 +31,12 @@ describe('dsh-browser-run smoke', () => {
     const { ctx, registered } = makeCtx()
     applyBrowser(ctx, {
       cf_account_id: 'acc',
-      cf_api_token_ref: 'CF_API_TOKEN',
+      cf_api_token: 'test-token',
     })
     const names = registered.map((t) => t.name).sort()
     assert.deepEqual(names, ['browse', 'pdf', 'screenshot'])
     // Config schema validates (Standard Schema protocol)
-    const result = BrowserConfig['~standard'].validate({ cf_account_id: 'acc' })
+    const result = BrowserConfig['~standard'].validate({ cf_account_id: 'acc', cf_api_token: 't' })
     assert.equal(result.issues === undefined || result.issues.length === 0, true)
   })
 })

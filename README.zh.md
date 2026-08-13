@@ -30,7 +30,7 @@ dsh plugin --profile web add dsh-cloudflare-browser-run
 - id: cloudflare-browser-run
   name: dsh-cloudflare-browser-run
   config:
-    cf_api_token_ref: CF_API_TOKEN   # 推荐:环境变量名
+    cf_api_token: <你的 token>
     cf_account_id: <你的 account id>
 ```
 
@@ -49,18 +49,15 @@ Account id:`dash.cloudflare.com/<ACCOUNT_ID>/...`。
 
 | 键 | 必填 | 说明 |
 |---|---|---|
-| `cf_api_token_ref` | * | API token 的环境变量名(经 `ctx.credentials` 解析) |
-| `cf_api_token` | * | 直接填 token 值(备用) |
+| `cf_api_token` | ✅ | 你的 API token(Browser Rendering:Edit) |
 | `cf_account_id` | ✅ | 你的 Cloudflare 账号 ID |
 | `cf_api_base` | – | API 地址覆盖 |
 | `output_dir` | – | 截图/PDF 输出目录(默认系统临时目录) |
 
-\* 两个 token 键填其一。
-
 ## 隐私
 
 - **只访问公网**:所有 URL 先过 SSRF 防护(localhost/内网 IP/IPv6/userinfo 一律拒绝)
-- token 每次操作经 `ctx.credentials` 解析——不写日志、不落盘
+- token 只存在于你的配置文件——不写日志、不落盘
 - Browser Run 以合规 bot 身份访问,是正规的抓取方式
 
 ## 开发

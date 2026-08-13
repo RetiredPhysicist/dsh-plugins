@@ -6,13 +6,11 @@
 //   screenshot(url)        save a PNG of the page, returns local path
 //   pdf(url)               save a PDF of the page, returns local path
 //
-// Credentials: recommended via CredentialRef (env var name in
-// `cf_api_token_ref`, resolved through ctx.credentials — the value never
-// lands in config). A plain `cf_api_token` string is also accepted.
+// Credentials: `cf_api_token` in the plugin config (profile/settings layer) —
+// no env vars, no secrets in code.
 
 import { Context } from '@deepseek-ai/cordis'
 import { defineTool } from '@deepseek-ai/dsh-tools'
-import { credentialRef, type ResolvedCredential } from '@deepseek-ai/dsh-credentials'
 import z from '@deepseek-ai/schemastery'
 import { mkdirSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
@@ -20,14 +18,11 @@ import { join } from 'path'
 import { browserRunAction, resolveConfig, type Action, type BrowserRunConfig } from './api.js'
 
 export const name = 'cloudflare-browser-run'
-export const inject = ['tools', 'credentials', 'systemPrompt']
+export const inject = ['tools', 'systemPrompt']
 
 export interface Config {
-  /** Env-var name of the Browser Rendering token (recommended; resolved via
-   *  ctx.credentials, value never stored in config). */
-  cf_api_token_ref?: string
-  /** Direct token value — fallback when no ref is configured. */
-  cf_api_token?: string
+  /** Cloudflare API token (Browser Rendering:Edit permission). */
+  cf_api_token: string
   /** Cloudflare account id. */
   cf_account_id: string
   /** API base override (default https://api.cloudflare.com/client/v4). */
@@ -37,8 +32,7 @@ export interface Config {
 }
 
 export const Config: z<Config> = z.object({
-  cf_api_token_ref: z.string().description('Env-var name of the Cloudflare API token (Browser Rendering:Edit)'),
-  cf_api_token: z.string().description('Direct token value (fallback when no ref is set)'),
+  cf_api_token: z.string().required().description('Cloudflare API token (Browser Rendering:Edit permission)'),
   cf_account_id: z.string().description('Cloudflare account id'),
   cf_api_base: z.string().description('API base URL override'),
   output_dir: z.string().description('Directory for screenshot/PDF output (default OS temp)'),
@@ -71,19 +65,12 @@ export function apply(ctx: Context, config: Config): void {
       'need a real browser, or when you need a screenshot. Only public http(s) URLs.',
   })
 
-  // Resolve credentials per operation (never at boot): a changed env var
-  // reaches the next call without a restart.
   const resolveToken = async (): Promise<{ ok: true; config: BrowserRunConfig } | { ok: false; error: string }> => {
-    let token: string | undefined = config.cf_api_token
-    if (config.cf_api_token_ref) {
-      try {
-        const resolved: ResolvedCredential = await ctx.credentials.resolve(credentialRef(config.cf_api_token_ref))
-        token = resolved.value
-      } catch (e) {
-        return { ok: false, error: `cf_api_token_ref '${config.cf_api_token_ref}' unresolvable: ${String(e).slice(0, 120)}` }
-      }
-    }
-    const cfg = resolveConfig({ cf_api_token: token, cf_account_id: config.cf_account_id, cf_api_base: config.cf_api_base })
+    const cfg = resolveConfig({
+      cf_api_token: config.cf_api_token,
+      cf_account_id: config.cf_account_id,
+      cf_api_base: config.cf_api_base,
+    })
     return 'error' in cfg ? { ok: false, error: cfg.error } : { ok: true, config: cfg }
   }
 
