@@ -1,6 +1,6 @@
 {
   "name": "dsh-atuin",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "DeepSeek Harness plugin: every user prompt you type (in the web UI) is appended to your atuin shell history, so it shows up in atuin search and shell integration.",
   "type": "module",
   "main": "dist/index.js",
