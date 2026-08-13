@@ -1,58 +1,50 @@
-# @alex/dsh-codebuddy-sdk
+# dsh-codebuddy-sdk
 
-DeepSeek Harness plugin: **CodeBuddy (Tencent Agent SDK) as an LLM provider
-adapter** registered into `ctx.llm`.
+把 **CodeBuddy(Tencent Agent SDK)** 注册为 DeepSeek Harness 的 LLM
+provider 适配器(`ctx.llm`)。
 
-Port of [pi-codebuddy-sdk](https://github.com/RealAlexandreAI/pi-codebuddy-sdk)
-to the dsh `LlmAdapter` seam.
+> 由 [pi-codebuddy-sdk](https://github.com/RealAlexandreAI/pi-codebuddy-sdk) 移植。
 
-## Status — WIP
+## 状态 — WIP 骨架
 
-> **This is a skeleton.** The adapter mounts and streams a placeholder
-> response so the plugin loads cleanly, but the real integration is not
-> wired yet:
+> 目前是骨架:适配器能挂载、能流式返回占位响应,但**真实集成还没接**:
 >
-> - ❌ multi-turn message translation (`GenerateOptions.messages` →
->   CodeBuddy)
-> - ❌ tool-call streaming (dsh `StreamChunk` tool blocks)
-> - ❌ on-device verification against the local `codebuddy` CLI
+> - ❌ 多轮消息翻译(`GenerateOptions.messages` → CodeBuddy)
+> - ❌ 工具调用流式输出(dsh `StreamChunk` 工具块)
+> - ❌ 本机 `codebuddy` CLI 联调
 >
-> The full port (query() invocation, assistant-event → StreamChunk
-> translation — mirroring `dsh-llm-pi-ai`'s stream adapter) is the next
-> iteration. Track it at
-> [RealAlexandreAI/dsh-codebuddy-sdk#issues](https://github.com/RealAlexandreAI/dsh-codebuddy-sdk).
+> 完整移植(参照 `dsh-llm-pi-ai` 的 stream 适配器)在下一轮做。
+> 进度看 [RealAlexandreAI/dsh-codebuddy-sdk#issues](https://github.com/RealAlexandreAI/dsh-codebuddy-sdk/issues)。
 
-## Install
+## 安装
 
 ```sh
-dsh plugin add @alex/dsh-codebuddy-sdk
+dsh plugin add dsh-codebuddy-sdk
 ```
 
-Requires the `codebuddy` CLI on `PATH` (same requirement as
-pi-codebuddy-sdk).
+需要 `codebuddy` CLI 在 `PATH` 上(与 pi-codebuddy-sdk 相同要求)。
 
-## Configuration
+## 配置
 
 ```yaml
 - id: codebuddy
-  name: '@alex/dsh-codebuddy-sdk'
+  name: dsh-codebuddy-sdk
   config:
-    provider: codebuddy   # provider route (default codebuddy)
-    model: codebuddy      # default model id (default codebuddy)
+    provider: codebuddy   # provider 路由(默认 codebuddy)
+    model: codebuddy      # 默认模型 ID(默认 codebuddy)
 ```
 
-## Privacy
+## 隐私
 
-- The plugin talks to the local `codebuddy` CLI only; no extra network hop
-  beyond what CodeBuddy itself uses.
-- No credentials are read or stored by this plugin (CLI auth is reused).
+- 只与本地 `codebuddy` CLI 通信,不额外发网络请求
+- 本插件不读取、不存储任何凭据(复用 CLI 自身认证)
 
-## Development
+## 开发
 
 ```bash
 npm install
 npm run typecheck
-npm test          # mount + placeholder stream smoke
+npm test          # 挂载 + 占位流 smoke
 npm run build
 ```
 
