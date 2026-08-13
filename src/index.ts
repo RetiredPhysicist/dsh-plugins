@@ -54,6 +54,12 @@ function toolResultText(value: unknown): string {
   return typeof value === 'string' ? value : JSON.stringify(value)
 }
 
+// Shared output shape for every tool: JSON-safe, rendered as text.
+const OUTPUT = {
+  schema: { type: 'json' },
+  render: (_args: unknown, value: unknown) => [{ type: 'text', text: toolResultText(value) }],
+}
+
 export function apply(ctx: Context, config: Config): void {
   ctx.systemPrompt.section({
     name: 'tool:cloudflare-browser-run',
@@ -127,10 +133,7 @@ export function apply(ctx: Context, config: Config): void {
         description: 'What to extract (default markdown)',
       },
     },
-    output: {
-      schema: { type: 'json' },
-      render: (_args, value) => [{ type: 'text', text: toolResultText(value) }],
-    },
+    output: OUTPUT,
     isConcurrencySafe: () => true,
     execute: (args) => runAction(args),
   })
@@ -143,10 +146,7 @@ export function apply(ctx: Context, config: Config): void {
     parameters: {
       url: { type: 'string', required: true, description: 'Public http(s) URL, e.g. https://example.com' },
     },
-    output: {
-      schema: { type: 'json' },
-      render: (_args, value) => [{ type: 'text', text: toolResultText(value) }],
-    },
+    output: OUTPUT,
     isConcurrencySafe: () => true,
     execute: (args) => runAction({ ...args, action: 'screenshot' }),
   })
@@ -159,10 +159,7 @@ export function apply(ctx: Context, config: Config): void {
     parameters: {
       url: { type: 'string', required: true, description: 'Public http(s) URL, e.g. https://example.com' },
     },
-    output: {
-      schema: { type: 'json' },
-      render: (_args, value) => [{ type: 'text', text: toolResultText(value) }],
-    },
+    output: OUTPUT,
     isConcurrencySafe: () => true,
     execute: (args) => runAction({ ...args, action: 'pdf' }),
   })
