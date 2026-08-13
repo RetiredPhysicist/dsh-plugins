@@ -1,4 +1,4 @@
-// @alex/dsh-codebuddy — DeepSeek Harness (Cordis) plugin.
+// dsh-codebuddy — DeepSeek Harness (Cordis) plugin.
 //
 // CodeBuddy (Tencent Agent SDK) as an LLM provider adapter registered into
 // ctx.llm. Port of pi-codebuddy-sdk to the dsh LlmAdapter seam.
