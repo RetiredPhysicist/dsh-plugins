@@ -1,4 +1,4 @@
-# @alex/dsh-search
+# @alex/dsh-all-search
 
 DeepSeek Harness plugin: **AnySearch-backed web search provider** registered
 into `ctx.web` — a single MCP gateway that aggregates exa / tavily /
@@ -16,7 +16,7 @@ and no extra per-backend credentials.
 ## Install
 
 ```sh
-dsh plugin add @alex/dsh-search
+dsh plugin add @alex/dsh-all-search
 ```
 
 The provider registers as `anysearch` on `ctx.web`; the built-in
@@ -26,7 +26,7 @@ The provider registers as `anysearch` on `ctx.web`; the built-in
 
 ```yaml
 - id: search
-  name: '@alex/dsh-search'
+  name: '@alex/dsh-all-search'
   config:
     api_key_ref: ANYSEARCH_API_KEY   # env var name — recommended
     # api_key: <direct value>        # fallback when no ref is set
