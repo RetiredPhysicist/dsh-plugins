@@ -24,7 +24,7 @@ atuin history end --exit 0 <ID>
 ## Quick start
 
 ```sh
-dsh plugin add dsh-atuin
+dsh plugin --profile web add dsh-atuin
 ```
 
 Requires a running atuin daemon (standard atuin setup). A missing `atuin` or stopped daemon is silently skipped — sessions never break.
@@ -32,7 +32,7 @@ Requires a running atuin daemon (standard atuin setup). A missing `atuin` or sto
 ## Config
 
 ```yaml
-- id: atuin-history
+- id: atuin
   name: dsh-atuin
   config:
     # atuin_bin: /opt/homebrew/bin/atuin

@@ -24,7 +24,7 @@ atuin history end --exit 0 <ID>
 ## 快速开始
 
 ```sh
-dsh plugin add dsh-atuin
+dsh plugin --profile web add dsh-atuin
 ```
 
 需要 atuin daemon 在运行(标准 atuin 安装自带)。atuin 缺失或 daemon 停了会静默跳过,不会影响会话。
@@ -32,7 +32,7 @@ dsh plugin add dsh-atuin
 ## 配置
 
 ```yaml
-- id: atuin-history
+- id: atuin
   name: dsh-atuin
   config:
     # atuin_bin: /opt/homebrew/bin/atuin

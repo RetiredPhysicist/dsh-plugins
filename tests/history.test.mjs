@@ -1,27 +1,16 @@
 /**
- * Tests for dsh-atuin-history: text extraction from user/message events,
- * deny rules, and length caps. Pure-node tests (no dsh runtime).
+ * Tests for dsh-atuin: text extraction from user/message events, deny rules,
+ * and length caps. Imports the real extractText from src (no mirror copy).
  */
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
+import { extractText } from '../src/index.ts'
 
 function makeUserMessage(content) {
   return {
     type: 'user/message',
     data: { id: 'm1', role: 'user', content },
   }
-}
-
-// Re-implement extractText (mirror of src) so we test the exact logic without
-// pulling the plugin module into node:test.
-function extractText(event) {
-  const data = event.data
-  const parts = Array.isArray(data?.content) ? data.content : []
-  return parts
-    .filter((p) => typeof p === 'object' && p !== null && 'text' in p)
-    .map((p) => (typeof p.text === 'string' ? p.text : ''))
-    .join('')
-    .trim()
 }
 
 describe('extractText', () => {
@@ -44,6 +33,11 @@ describe('extractText', () => {
   it('handles missing content', () => {
     assert.equal(extractText({ type: 'user/message', data: { id: 'x' } }), '')
   })
+
+  it('trims surrounding whitespace', () => {
+    const event = makeUserMessage([{ type: 'text', text: '  spaced  ' }])
+    assert.equal(extractText(event), 'spaced')
+  })
 })
 
 describe('record rules', () => {
@@ -57,6 +51,11 @@ describe('record rules', () => {
   it('truncates long prompts', () => {
     const text = 'a'.repeat(5000)
     const maxLen = 2000
-    assert.equal(text.length > maxLen && text.slice(0, maxLen).length, maxLen)
+    assert.equal(text.slice(0, maxLen).length, maxLen)
+  })
+
+  it('empty deny config yields no rules', () => {
+    const denies = ''.split(',').filter(Boolean).map((s) => new RegExp(s.trim()))
+    assert.equal(denies.length, 0)
   })
 })

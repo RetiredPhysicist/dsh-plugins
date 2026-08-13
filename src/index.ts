@@ -15,7 +15,7 @@ import { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import { spawn } from 'child_process'
 
-export const name = 'atuin-history'
+export const name = 'atuin'
 
 /**
  * Minimal self-contained shapes for the `session/event` → `user/message`
@@ -52,7 +52,7 @@ export const Config: z<Config> = z.object({
 })
 
 /** Extract the user's plain text from a user/message event's parts. */
-function extractText(event: SessionEventLike): string {
+export function extractText(event: SessionEventLike): string {
   const parts = Array.isArray(event?.data?.content) ? event.data.content : []
   return parts
     .filter((p) => typeof p === 'object' && p !== null && 'text' in p)
@@ -60,6 +60,11 @@ function extractText(event: SessionEventLike): string {
     .join('')
     .trim()
 }
+
+// dsh's `session/event` is a harness-level event, not a Cordis built-in one,
+// so type it loosely instead of importing @deepseek-ai/dsh-session (its
+// dsh-type-meta dep isn't published at rc stage).
+type SessionEventHub = (event: string, listener: (session: SessionLike, event: SessionEventLike) => void) => unknown
 
 export function apply(ctx: Context, config: Config): void {
   const atuinBin = config.atuin_bin ?? 'atuin'
@@ -90,7 +95,8 @@ export function apply(ctx: Context, config: Config): void {
     })
   }
 
-  ;(ctx as any).on('session/event', (session: SessionLike, event: SessionEventLike) => {
+  const onEvent = (ctx as unknown as { on: SessionEventHub }).on
+  onEvent('session/event', (session: SessionLike, event: SessionEventLike) => {
     if (event.type !== 'user/message') return
     const title = typeof session?.title === 'string' ? session.title : ''
     if (sessionPatterns.length > 0 && !sessionPatterns.some((re) => re.test(title))) return
