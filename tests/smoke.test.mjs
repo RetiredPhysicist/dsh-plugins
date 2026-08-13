@@ -12,19 +12,13 @@ function makeCtx() {
       registered.push(p)
     },
   })
-  ctx.provide('credentials', {
-    async resolve(ref) {
-      assert.equal(ref, 'ANYSEARCH_API_KEY')
-      return { value: 'test-key', source: 'env' }
-    },
-  })
   return { ctx, registered }
 }
 
 describe('dsh-search smoke', () => {
   it('registers the anysearch provider', () => {
     const { ctx, registered } = makeCtx()
-    applySearch(ctx, { api_key_ref: 'ANYSEARCH_API_KEY' })
+    applySearch(ctx, { api_key: 'test-key' })
     assert.equal(registered.length, 1)
     assert.equal(registered[0].id, 'anysearch')
     assert.equal(registered[0].available(), true)

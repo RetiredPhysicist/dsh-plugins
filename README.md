@@ -26,21 +26,19 @@ The provider registers as `anysearch` on `ctx.web` — the built-in `web_search`
 - id: all-search
   name: dsh-all-search
   config:
-    api_key_ref: ANYSEARCH_API_KEY   # env var name — recommended
-    # api_key: <direct value>
+    api_key: <your anysearch key>
 ```
 
 | key | required | meaning |
 |---|---|---|
-| `api_key_ref` | * | env-var name of the AnySearch key (via `ctx.credentials`) |
-| `api_key` | * | direct key value (fallback) |
+| `api_key` | ✅ | your AnySearch key |
 | `base_url` | – | MCP endpoint override |
 
-\* one of the two key keys. Without a key the provider reports `available() = false` and the seam skips it.
+Without a key the provider reports `available() = false` and the seam skips it.
 
 ## Privacy
 
-- The key is resolved per operation via `ctx.credentials` — never logged.
+- The key lives only in your config file — never logged.
 - Only your query and result count go to the AnySearch gateway.
 
 ## Development
@@ -55,7 +53,7 @@ npm run build
 Live search test:
 
 ```bash
-ANYSEARCH_API_KEY=<key> node --import tsx tests/real/real-search.mjs
+node --import tsx tests/real/real-search.mjs
 ```
 
 ## License

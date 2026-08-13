@@ -26,21 +26,19 @@ provider 以 `anysearch` 注册到 `ctx.web`,内置的 `web_search` 工具会自
 - id: all-search
   name: dsh-all-search
   config:
-    api_key_ref: ANYSEARCH_API_KEY   # 推荐:环境变量名
-    # api_key: <直接填 key>
+    api_key: <你的 anysearch key>
 ```
 
 | 键 | 必填 | 说明 |
 |---|---|---|
-| `api_key_ref` | * | AnySearch key 的环境变量名(经 `ctx.credentials` 解析) |
-| `api_key` | * | 直接填 key(备用) |
+| `api_key` | ✅ | 你的 AnySearch key |
 | `base_url` | – | MCP 端点覆盖 |
 
 \* 两个 key 键填其一。没有 key 时 provider `available() = false`,seam 自动跳过。
 
 ## 隐私
 
-- key 每次搜索经 `ctx.credentials` 解析——不写日志
+- key 只存在于你的配置文件——不写日志
 - 只向 AnySearch 网关发送查询词和结果数量
 
 ## 开发
@@ -55,7 +53,7 @@ npm run build
 真实搜索测试:
 
 ```bash
-ANYSEARCH_API_KEY=<key> node --import tsx tests/real/real-search.mjs
+node --import tsx tests/real/real-search.mjs
 ```
 
 ## License
