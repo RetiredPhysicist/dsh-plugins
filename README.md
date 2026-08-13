@@ -49,6 +49,24 @@ is `available() = false` and the seam skips it.
 - Only your search query and result count are sent to the AnySearch MCP
   gateway.
 
+## Real integration
+
+Optional end-to-end tests that hit live services (not part of `npm test`):
+
+```bash
+# dsh-cloudflare-browser-run: real Cloudflare Browser Run API
+DSH_TEST_CF_TOKEN=<token> DSH_TEST_CF_ACCOUNT=<account> node --import tsx tests/real/real-cf.mjs
+
+# dsh-atuin: record into your real atuin database (daemon must run)
+node --import tsx tests/real/real-atuin.mjs
+
+# dsh-all-search: real AnySearch query
+ANYSEARCH_API_KEY=<key> node --import tsx tests/real/real-search.mjs
+
+# dsh-nocturne-memory: real Nocturne MCP server (reuses your pi config)
+node --import tsx tests/real/real-mcp.mjs
+```
+
 ## Development
 
 ```bash
