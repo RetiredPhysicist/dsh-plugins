@@ -44,5 +44,8 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/RealAlexandreAI/dsh-atuin"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }

@@ -1,7 +1,7 @@
 // Real integration: dsh-atuin — simulate a user/message event through the
 // cordis-mounted plugin and verify the prompt lands in the atuin database.
 import { Context } from '@deepseek-ai/cordis'
-import { apply } from '../src/index.ts'
+import { apply } from '../../src/index.ts'
 
 const ctx = new Context()
 apply(ctx, {})
