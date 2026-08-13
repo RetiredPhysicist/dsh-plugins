@@ -1,4 +1,4 @@
-// @alex/dsh-cloudflare-browser-run — DeepSeek Harness (Cordis) plugin: web browsing
+// dsh-cloudflare-browser-run — DeepSeek Harness (Cordis) plugin: web browsing
 // tools backed by Cloudflare Browser Run Quick Actions.
 //
 // Tools:

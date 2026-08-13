@@ -1,114 +1,91 @@
-# @alex/dsh-cloudflare-browser-run
+# dsh-cloudflare-browser-run
 
-DeepSeek Harness plugin: **web browsing tools** backed by
-[Cloudflare Browser Run](https://developers.cloudflare.com/browser-run/) —
-headless Chrome on CF's network. Pages render with a real browser, so
-JS-heavy/SPA sites work, and requests come from Cloudflare's network.
+给 DeepSeek Harness 提供**真浏览器网页访问**能力:headless Chrome 跑在
+Cloudflare 网络上,JS 渲染的页面、SPA、截图、PDF 都能处理。
 
-Port of [pi-cloudflare-browser-run](https://github.com/RealAlexandreAI/pi-cloudflare-browser-run)
-to the dsh (Cordis) plugin model.
+> 由 [pi-cloudflare-browser-run](https://github.com/RealAlexandreAI/pi-cloudflare-browser-run) 移植,
+> 完全符合 dsh 的 Cordis 插件规范。
 
-## Why
+## 为什么需要它
 
-dsh's built-in `web_fetch` is a plain HTTP fetch (JS pages return empty;
-SSRF protection is deferred upstream). This plugin adds a real browser:
-clean markdown, screenshots (PNG), PDFs, login-capable sessions and
-WebMCP-enabled sites.
+dsh 内置的 `web_fetch` 只是普通 HTTP fetch——JS 渲染的页面拿到的是空壳,
+官方也标注 SSRF 防护待补。本插件补上:
 
-## Tools
+- 真浏览器渲染(JS/SPA 页面也能读)
+- 干净的 markdown 文本提取
+- 截图(PNG)和 PDF
+- 登录态会话、WebMCP 站点
 
-| tool | what it does |
+## 工具
+
+| 工具 | 说明 |
 |---|---|
-| `browse` | fetch a public URL, return clean **markdown** (default; `action` = `screenshot` \| `pdf`) |
-| `screenshot` | save a PNG locally, returns the file path |
-| `pdf` | save a PDF locally, returns the file path |
+| `browse` | 抓取公开 URL,返回干净 markdown(默认);`action` 可选 `screenshot` / `pdf` |
+| `screenshot` | 页面截图存为 PNG,返回本地路径 |
+| `pdf` | 页面渲染为 PDF,返回本地路径 |
 
-## Install
+## 安装
 
 ```sh
-dsh plugin add @alex/dsh-cloudflare-browser-run
-# or, from a cordis.yml composition:
-#   - id: browser-run
-#     name: '@alex/dsh-cloudflare-browser-run'
-#     config: { ... }
+dsh plugin add dsh-cloudflare-browser-run
 ```
 
-## Configuration
-
-Credentials are configured on the plugin row (profile/settings layer):
+或在 `cordis.yml` 组合中:
 
 ```yaml
 - id: browser-run
-  name: '@alex/dsh-cloudflare-browser-run'
+  name: dsh-cloudflare-browser-run
   config:
-    cf_api_token_ref: CF_API_TOKEN   # env var name — recommended
-    cf_account_id: <your account id>
-    # cf_api_token: <direct value>   # fallback when no ref is set
-    # output_dir: /tmp/dsh-cloudflare-browser-run
+    cf_api_token_ref: CF_API_TOKEN   # 推荐:环境变量名,经 ctx.credentials 解析
+    cf_account_id: <你的 account id>
 ```
 
-| key | required | meaning |
+## 配置
+
+| 键 | 必填 | 说明 |
 |---|---|---|
-| `cf_api_token_ref` | * | env-var name of the Cloudflare API token (resolved via `ctx.credentials`, value never stored in config) |
-| `cf_api_token` | * | direct token value (fallback) |
-| `cf_account_id` | ✅ | your Cloudflare account id |
-| `cf_api_base` | – | API base override (default `https://api.cloudflare.com/client/v4`) |
-| `output_dir` | – | where screenshots/PDFs land (default OS temp dir) |
+| `cf_api_token_ref` | * | CF API token 的环境变量名(推荐,值不落配置) |
+| `cf_api_token` | * | 直接填 token 值(备用) |
+| `cf_account_id` | ✅ | 你的 Cloudflare 账号 ID |
+| `cf_api_base` | – | API 地址覆盖(默认官方 v4) |
+| `output_dir` | – | 截图/PDF 输出目录(默认系统临时目录) |
 
-\* one of `cf_api_token_ref` / `cf_api_token` is required.
+\* 二者填其一。
 
-### Create the token
+### 创建 token
 
-1. https://dash.cloudflare.com/profile/api-tokens → **Create Token** →
-   template **"Browser Rendering: Edit"**
-2. Account id: `dash.cloudflare.com/<ACCOUNT_ID>/...`
-3. Export the env var (`CF_API_TOKEN=...`) or pass the value directly.
+1. [dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens) → Create Token → 模板选 **Browser Rendering: Edit**
+2. account id 在 `dash.cloudflare.com/<ACCOUNT_ID>/...`
+3. 导出环境变量,或直接写在配置里
 
-### Verify
+### 快速验证
 
 ```bash
 curl -X POST \
   "https://api.cloudflare.com/client/v4/accounts/<ACCOUNT_ID>/browser-rendering/markdown" \
-  -H "Authorization: Bearer <TOKEN>" \
-  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" \
   -d '{"url":"https://example.com"}'
 ```
 
-## Privacy
+## 隐私
 
-- **Public web only**: every URL passes an SSRF guard before the API is
-  called — non-http(s) protocols, localhost, private/reserved IPs, IPv6
-  literals, userinfo, and oversized URLs are rejected.
-- The API token is resolved per operation via `ctx.credentials`; it is
-  never logged and never written by the plugin.
-- Browser Run identifies its traffic as a well-behaved bot, which is the
-  compliant way to scrape.
+- **只访问公网**:所有 URL 先过 SSRF 防护(拒绝 localhost/内网 IP/IPv6/userinfo)
+- token 每次操作经 `ctx.credentials` 解析,不写日志、不落盘
+- Browser Run 以合规 bot 身份访问,是正规的抓取方式
 
-## Real integration
-
-Optional end-to-end tests that hit live services (not part of `npm test`):
-
-```bash
-# dsh-cloudflare-browser-run: real Cloudflare Browser Run API
-DSH_TEST_CF_TOKEN=<token> DSH_TEST_CF_ACCOUNT=<account> node --import tsx tests/real/real-cf.mjs
-
-# dsh-atuin: record into your real atuin database (daemon must run)
-node --import tsx tests/real/real-atuin.mjs
-
-# dsh-all-search: real AnySearch query
-ANYSEARCH_API_KEY=<key> node --import tsx tests/real/real-search.mjs
-
-# dsh-nocturne-memory: real Nocturne MCP server (reuses your pi config)
-node --import tsx tests/real/real-mcp.mjs
-```
-
-## Development
+## 开发
 
 ```bash
 npm install
 npm run typecheck
-npm test          # SSRF guard, config resolution, API call shape
-npm run build     # emits dist/ for the bundle
+npm test          # SSRF 防护 / 配置解析 / API 调用形状
+npm run build
+```
+
+真实 API 集成测试(不参与 `npm test`):
+
+```bash
+DSH_TEST_CF_TOKEN=<token> DSH_TEST_CF_ACCOUNT=<account> node --import tsx tests/real/real-cf.mjs
 ```
 
 ## License
