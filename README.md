@@ -1,89 +1,70 @@
-# @alex/dsh-atuin
+# dsh-atuin
 
-DeepSeek Harness plugin: every prompt you type into a DSH session (web UI
-included) is appended to your **atuin** shell history, so it shows up in
-`atuin search` and your shell integration (Ctrl-R, etc.).
+把你在 DeepSeek Harness 里输入的每一句话写入 **atuin** shell 历史,
+在 `atuin search` / shell 集成(Ctrl-R)里都能搜到。
 
-dsh has no terminal UI; this is the atuin bridge for the interfaces it
-does have.
+> 由 [pi-atuin](https://github.com/RealAlexandreAI/pi-atuin) 移植。
+> dsh 没有终端 UI,这个插件就是它的 atuin 桥。
 
-## How it works
+## 怎么工作
 
-The plugin listens to `session/event` → `user/message`. For every user
-prompt it runs:
+监听 `session/event` → `user/message`,对每条用户输入执行:
 
 ```
-atuin history start -- "<prompt>"
-atuin history end
+atuin history start -- "<输入>"
+atuin history end --exit 0 <ID>
 ```
 
-against your local atuin daemon. Model replies, tool calls, and file
-contents are never recorded — only your own typed prompts.
+**只记录你自己输入的话**——模型回复、工具调用、文件内容一律不记。
 
-## Install
+## 安装
 
 ```sh
-dsh plugin add @alex/dsh-atuin
+dsh plugin add dsh-atuin
 ```
 
-Requires a running atuin daemon (standard atuin shell integration sets
-this up). Missing `atuin` or a stopped daemon is silently skipped — the
-plugin never crashes a session.
+需要 atuin daemon 在运行(标准 atuin 安装自带)。atuin 不存在或 daemon
+停了会静默跳过,不会影响会话。
 
-## Configuration
+## 配置
 
 ```yaml
 - id: atuin-history
-  name: '@alex/dsh-atuin'
+  name: dsh-atuin
   config:
-    # atuin_bin: /opt/homebrew/bin/atuin   # default: atuin on PATH
-    # deny: "^/clear$,password"             # comma-separated regexes, not recorded
-    # max_len: 2000                         # truncate long prompts
-    # session_match: "project-x,deep-dive"  # only sessions whose title matches
+    # atuin_bin: /opt/homebrew/bin/atuin   # 默认用 PATH 上的 atuin
+    # deny: "^/clear$,password"            # 逗号分隔正则,命中的不记录
+    # max_len: 2000                        # 超长输入截断
+    # session_match: "project-x,deep-dive" # 只记录标题匹配的会话
 ```
 
-| key | meaning |
+| 键 | 说明 |
 |---|---|
-| `atuin_bin` | path to the atuin binary (default `atuin` on PATH) |
-| `deny` | comma-separated regexes; matching prompts are NOT recorded (e.g. secrets, slash commands) |
-| `max_len` | prompt truncation length (default 2000; `0` disables) |
-| `session_match` | comma-separated regexes; only sessions whose title matches are recorded (empty = all) |
+| `atuin_bin` | atuin 可执行文件路径(默认 `atuin`) |
+| `deny` | 逗号分隔正则,命中的输入**不记录**(比如密钥、斜杠命令) |
+| `max_len` | 输入截断长度(默认 2000;`0` 关闭) |
+| `session_match` | 逗号分隔正则,只记录会话标题匹配的(空 = 全部) |
 
-## Privacy
+## 隐私
 
-- Only your own typed prompts are recorded; never replies, tool calls, or
-  file contents.
-- `deny` lets you suppress prompts that must not be logged.
-- Entries live in your local atuin database
-  (`~/.local/share/atuin/history.db`), same as shell commands.
-- Nothing is sent anywhere — atuin history `start`/`end` is a local
-  daemon call.
+- 只记录你自己输入的话;回复、工具调用、文件内容一律不记
+- `deny` 可屏蔽敏感输入
+- 数据落在本地 atuin 库(`~/.local/share/atuin/history.db`),与 shell
+  命令同库,不发送到任何地方
 
-## Real integration
-
-Optional end-to-end tests that hit live services (not part of `npm test`):
-
-```bash
-# dsh-cloudflare-browser-run: real Cloudflare Browser Run API
-DSH_TEST_CF_TOKEN=<token> DSH_TEST_CF_ACCOUNT=<account> node --import tsx tests/real/real-cf.mjs
-
-# dsh-atuin: record into your real atuin database (daemon must run)
-node --import tsx tests/real/real-atuin.mjs
-
-# dsh-all-search: real AnySearch query
-ANYSEARCH_API_KEY=<key> node --import tsx tests/real/real-search.mjs
-
-# dsh-nocturne-memory: real Nocturne MCP server (reuses your pi config)
-node --import tsx tests/real/real-mcp.mjs
-```
-
-## Development
+## 开发
 
 ```bash
 npm install
 npm run typecheck
-npm test          # text extraction, deny rules, length caps
+npm test          # 文本提取 / deny 规则 / 截断
 npm run build
+```
+
+真实入库集成测试(需要 atuin daemon):
+
+```bash
+node --import tsx tests/real/real-atuin.mjs
 ```
 
 ## License

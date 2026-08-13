@@ -1,4 +1,4 @@
-// @alex/dsh-atuin-history — DeepSeek Harness (Cordis) plugin.
+// dsh-atuin-history — DeepSeek Harness (Cordis) plugin.
 //
 // Every user prompt typed into a DSH session is appended to the atuin
 // shell-history daemon (`atuin history start` + `end`), so prompts you
