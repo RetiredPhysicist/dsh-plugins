@@ -39,4 +39,12 @@ describe('dsh-browser-run smoke', () => {
     const result = BrowserConfig['~standard'].validate({ cf_account_id: 'acc', cf_api_token: 't' })
     assert.equal(result.issues === undefined || result.issues.length === 0, true)
   })
+
+  it('loads with no config (credentials surface on tool calls, not at boot)', () => {
+    const { ctx, registered } = makeCtx()
+    applyBrowser(ctx, {})
+    assert.equal(registered.length, 3)
+    const bare = BrowserConfig['~standard'].validate({})
+    assert.equal(bare.issues === undefined || bare.issues.length === 0, true)
+  })
 })

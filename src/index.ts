@@ -21,10 +21,12 @@ export const name = 'cloudflare-browser-run'
 export const inject = ['tools', 'systemPrompt']
 
 export interface Config {
-  /** Cloudflare API token (Browser Rendering:Edit permission). */
-  cf_api_token: string
+  /** Cloudflare API token (Browser Rendering:Edit permission). Optional at
+   *  load time — missing credentials surface as a setup hint on tool calls so
+   *  the plugin still loads in a bare profile. */
+  cf_api_token?: string
   /** Cloudflare account id. */
-  cf_account_id: string
+  cf_account_id?: string
   /** API base override (default https://api.cloudflare.com/client/v4). */
   cf_api_base?: string
   /** Where screenshots/PDFs are written (default OS temp dir). */
@@ -32,7 +34,7 @@ export interface Config {
 }
 
 export const Config: z<Config> = z.object({
-  cf_api_token: z.string().required().description('Cloudflare API token (Browser Rendering:Edit permission)'),
+  cf_api_token: z.string().description('Cloudflare API token (Browser Rendering:Edit permission)'),
   cf_account_id: z.string().description('Cloudflare account id'),
   cf_api_base: z.string().description('API base URL override'),
   output_dir: z.string().description('Directory for screenshot/PDF output (default OS temp)'),
