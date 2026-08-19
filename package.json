@@ -1,6 +1,6 @@
 {
   "name": "dsh-all-search",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "DeepSeek Harness plugin: AnySearch-backed web search provider (aggregates exa/tavily/firecrawl via one MCP gateway) registered into ctx.web.",
   "type": "module",
   "main": "dist/index.js",
@@ -29,7 +29,7 @@
   "license": "MIT",
   "dependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
-    "@deepseek-ai/dsh-web": "^0.0.1-rc.1",
+    "@deepseek-ai/dsh-web": "^0.1.0-rc.7",
     "@deepseek-ai/schemastery": "^3.18.0"
   },
   "devDependencies": {
