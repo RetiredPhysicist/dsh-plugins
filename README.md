@@ -6,6 +6,8 @@
 
 Adds an **AnySearch** web-search provider to DeepSeek Harness, registered into `ctx.web`. AnySearch is a single MCP gateway that aggregates exa / tavily / firecrawl / context7 behind **one API key**.
 
+With an optional `firecrawl_api_key`, developer-intent queries (repo / issue / PR / commit / skill) are answered by the **Firecrawl Developer Index** first — a semantic artifact index over READMEs, issues, PRs, OpenAPI specs and skills — falling back to AnySearch when it fails or returns nothing.
+
 > Port of [pi-all-search](https://github.com/RealAlexandreAI/pi-all-search).
 
 [English](README.md) · [中文](README.zh.md)
@@ -33,6 +35,7 @@ The provider registers as `anysearch` on `ctx.web` — the built-in `web_search`
 |---|---|---|
 | `api_key` | ✅ | your AnySearch key |
 | `base_url` | – | MCP endpoint override |
+| `firecrawl_api_key` | – | enables the Firecrawl Developer Index branch for repo/issue/PR/skill queries |
 
 Without a key the provider reports `available() = false` and the seam skips it.
 

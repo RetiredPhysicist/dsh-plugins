@@ -7,7 +7,14 @@
 // Ported from pi-all-search (providers/anysearch.ts) with the pi UI/typebox
 // surface replaced by the dsh WebSearchProvider seam.
 //
-// Privacy: the API key lives in the plugin config only; it is never logged.
+// Optionally, with `firecrawl_api_key` set, developer-intent queries
+// (repo / issue / PR / github / commit / skill) are answered by the
+// Firecrawl Developer Index first (semantic artifact index: READMEs, issues,
+// PRs, OpenAPI specs, skills), falling back to AnySearch when it fails or
+// returns nothing. Kept inside one provider because the dsh-web seam errors
+// on multiple usable providers unless one is configured explicitly.
+//
+// Privacy: API keys live in the plugin config only; they are never logged.
 
 import { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
@@ -21,14 +28,23 @@ export interface Config {
   api_key: string
   /** AnySearch MCP endpoint override. */
   base_url?: string
+  /** Firecrawl API key — enables the Developer Index branch for developer-intent queries. */
+  firecrawl_api_key?: string
 }
 
 export const Config: z<Config> = z.object({
   api_key: z.string().required().description('AnySearch API key'),
   base_url: z.string().description('AnySearch MCP endpoint override (default https://api.anysearch.com/mcp)'),
+  firecrawl_api_key: z.string().description('Firecrawl API key (optional) — enables Developer Index for repo/issue/PR/skill queries'),
 })
 
 const DEFAULT_BASE_URL = 'https://api.anysearch.com/mcp'
+const DEVELOPER_QUERY_RE =
+  /\b(repo|repos|repository|repositories|github|issue|issues|pull request|pull requests|commit|commits|branch|merge|openapi|readme|skill|skills|library|framework)\b/i
+
+export function isDeveloperQuery(query: string): boolean {
+  return DEVELOPER_QUERY_RE.test(query)
+}
 
 export class AnysearchProvider implements WebSearchProvider {
   readonly id = 'anysearch'
@@ -88,14 +104,62 @@ export class AnysearchProvider implements WebSearchProvider {
   }
 }
 
+export class FirecrawlDevProvider implements WebSearchProvider {
+  readonly id = 'firecrawl-dev'
+  constructor(private readonly apiKey: string) {}
+
+  available(): boolean {
+    return Boolean(this.apiKey)
+  }
+
+  async search(request: WebSearchRequest, signal?: AbortSignal): Promise<WebSearchResult> {
+    const resp = await fetch('https://api.firecrawl.dev/v2/search/developer', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.apiKey}`,
+      },
+      signal,
+      body: JSON.stringify({ query: request.query, limit: request.maxResults ?? 5 }),
+    })
+    if (!resp.ok) throw new Error(`Firecrawl Developer Index HTTP ${resp.status}`)
+    const data = (await resp.json()) as { data?: Array<Record<string, unknown>> }
+    const sources: WebSearchSource[] = (data.data ?? []).map((r: any) => ({
+      title: r.title ?? r.id ?? '',
+      url: r.url ?? '',
+      snippet:
+        r.description ??
+        (Array.isArray(r.passages) ? r.passages.slice(0, 3).join(' ') : '') ??
+        '',
+    }))
+    const truncated = request.maxResults !== undefined && sources.length > request.maxResults
+    return {
+      sources: truncated ? sources.slice(0, request.maxResults) : sources,
+      truncated,
+    }
+  }
+}
+
 export function apply(ctx: Context, config: Config): void {
-  // `available()` is a cheap local check — no network.
+  const anysearch = new AnysearchProvider(config.api_key, config.base_url ?? DEFAULT_BASE_URL)
+  const devIndex = config.firecrawl_api_key ? new FirecrawlDevProvider(config.firecrawl_api_key) : null
+
+  // Single provider to avoid dsh-web's WEB_PROVIDER_AMBIGUOUS on multiple
+  // usable providers. Developer-intent queries try the Developer Index first.
   const wrapper: WebSearchProvider = {
     id: 'anysearch',
     available: () => Boolean(config.api_key),
     async search(request, signal) {
       if (!config.api_key) throw new Error('AnySearch API key not configured (set api_key in the plugin config)')
-      return new AnysearchProvider(config.api_key, config.base_url ?? DEFAULT_BASE_URL).search(request, signal)
+      if (devIndex && isDeveloperQuery(request.query)) {
+        try {
+          const dev = await devIndex.search(request, signal)
+          if (dev.sources.length > 0) return dev
+        } catch {
+          // fall through to AnySearch
+        }
+      }
+      return anysearch.search(request, signal)
     },
   }
   ctx.web.registerSearchProvider(wrapper)
