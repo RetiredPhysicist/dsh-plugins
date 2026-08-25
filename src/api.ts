@@ -86,7 +86,12 @@ export function resolveConfig(input: {
   return { apiToken, accountId, apiBase: input.cf_api_base ?? DEFAULT_API_BASE };
 }
 
-export async function browserRunAction(config: BrowserRunConfig, action: Action, rawUrl: string): Promise<ApiResult> {
+export async function browserRunAction(
+  config: BrowserRunConfig,
+  action: Action,
+  rawUrl: string,
+  externalSignal?: AbortSignal,
+): Promise<ApiResult> {
   try {
     const url = assertSafeUrl(rawUrl);
     const base = (config.apiBase ?? DEFAULT_API_BASE).replace(/\/$/, "");
@@ -100,8 +105,11 @@ export async function browserRunAction(config: BrowserRunConfig, action: Action,
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
       },
       body: JSON.stringify({ url }),
-      // Hanging API calls must not stall a dsh turn forever.
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      // Hard ceiling against hanging API calls; the dsh timeout policy may
+      // cancel earlier via exec.signal — whichever fires first aborts.
+      signal: externalSignal
+        ? AbortSignal.any([AbortSignal.timeout(FETCH_TIMEOUT_MS), externalSignal])
+        : AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
     if (!res.ok) {
       const body = await res.text();

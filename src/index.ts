@@ -50,10 +50,57 @@ function toolResultText(value: unknown): string {
   return typeof value === 'string' ? value : JSON.stringify(value)
 }
 
-// Shared output shape for every tool: JSON-safe, rendered as text.
+function hostOf(raw: unknown): string {
+  if (typeof raw !== 'string') return ''
+  try {
+    return new URL(raw).host
+  } catch {
+    return raw
+  }
+}
+
+// UI presentation for the pending call: a short fetch-style card carrying the
+// target host. `kind: 'fetch'` gives a capable dsh web UI an icon treatment.
+function presentCallFor(label: string): (args: unknown) => unknown {
+  return (args) => {
+    const url = (args as { url?: unknown }).url
+    const host = hostOf(url)
+    return {
+      card: 'generic',
+      kind: 'fetch',
+      title: `${label} ${host}`,
+      rawInput: host ? url : undefined,
+    }
+  }
+}
+
+// UI presentation for the settled call: success shows the returned text/file
+// path; failure collapses to a short error title with the error content.
+function presentResultFor(label: string): (args: unknown, result: { content: Array<{ type: string; text?: string }>; isError: boolean }) => unknown {
+  return (args, result) => {
+    const host = hostOf((args as { url?: unknown }).url)
+    const text = result.content.map((b) => (b.type === 'text' && b.text) || '').join('').trim()
+    if (result.isError) {
+      return { card: 'generic', title: `${label} ${host} failed`, content: [{ type: 'text', text: text || 'unknown error' }] }
+    }
+    return {
+      card: 'generic',
+      title: `${label} ${host} ok`,
+      content: text ? [{ type: 'text', text }] : undefined,
+    }
+  }
+}
+
+// Shared output shape for every tool: JSON-safe, rendered as text, with a
+// tool/result meta projection for UI event consumers.
 const OUTPUT = {
   schema: { type: 'json' },
   render: (_args: unknown, value: unknown) => [{ type: 'text', text: toolResultText(value) }],
+  presentationMeta: (args: unknown, value: unknown) => ({
+    url: (args as { url?: unknown }).url ?? '',
+    action: (args as { action?: unknown }).action ?? 'markdown',
+    summary: toolResultText(value).slice(0, 200),
+  }),
 }
 
 export function apply(ctx: Context, config: Config): void {
@@ -92,14 +139,17 @@ export function apply(ctx: Context, config: Config): void {
   }
 
   // Shared execution path for every tool: resolve the token once, run the
-  // action, then normalize the result into a tool-safe JSON shape.
+  // action, then normalize the result into a tool-safe JSON shape. `signal`
+  // (the dsh timeout policy's abort) is forwarded so a cooperative cancel
+  // actually stops the in-flight fetch.
   const runAction = async (
     args: { url?: unknown; action?: unknown },
+    exec?: { signal?: AbortSignal },
   ): Promise<{ ok: boolean; action: Action; path?: string; content?: string; error?: string }> => {
     const action = (args.action ?? 'markdown') as Action
     const resolved = await resolveToken()
     if (!resolved.ok) return { ok: false, action, error: 'error' in resolved ? resolved.error : 'unknown' }
-    const r = await browserRunAction(resolved.config, action, String(args.url ?? ''))
+    const r = await browserRunAction(resolved.config, action, String(args.url ?? ''), exec?.signal)
     if (!r.ok) return { ok: false, action, error: 'error' in r ? r.error : 'unknown' }
     if (action === 'markdown') {
       return { ok: true, action, content: String(r.content).slice(0, 100_000) || '(page returned no readable text)' }
@@ -124,7 +174,12 @@ export function apply(ctx: Context, config: Config): void {
     },
     output: OUTPUT,
     isConcurrencySafe: () => true,
-    execute: (args) => runAction(args),
+    // Cooperative budget (enforced by the dsh timeout policy via exec.signal);
+    // an `action` may be screenshot/pdf, so allow the slowest path.
+    timeoutMs: 120_000,
+    presentCall: presentCallFor('browse'),
+    presentResult: presentResultFor('browse'),
+    execute: (args, exec) => runAction(args, exec),
   })
 
   register({
@@ -137,7 +192,10 @@ export function apply(ctx: Context, config: Config): void {
     },
     output: OUTPUT,
     isConcurrencySafe: () => true,
-    execute: (args) => runAction({ ...args, action: 'screenshot' }),
+    timeoutMs: 120_000,
+    presentCall: presentCallFor('screenshot'),
+    presentResult: presentResultFor('screenshot'),
+    execute: (args, exec) => runAction({ ...args, action: 'screenshot' }, exec),
   })
 
   register({
@@ -150,6 +208,9 @@ export function apply(ctx: Context, config: Config): void {
     },
     output: OUTPUT,
     isConcurrencySafe: () => true,
-    execute: (args) => runAction({ ...args, action: 'pdf' }),
+    timeoutMs: 120_000,
+    presentCall: presentCallFor('pdf'),
+    presentResult: presentResultFor('pdf'),
+    execute: (args, exec) => runAction({ ...args, action: 'pdf' }, exec),
   })
 }
