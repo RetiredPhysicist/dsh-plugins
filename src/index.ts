@@ -106,7 +106,7 @@ const OUTPUT = {
 export function apply(ctx: Context, config: Config): void {
   ctx.systemPrompt.section({
     name: 'tool:cloudflare-browser-run',
-    order: 112,
+    order: 2950,
     text:
       'Use the browse tool to fetch any public web page in a real headless ' +
       'browser (Cloudflare Browser Run): it returns clean markdown, a screenshot ' +
