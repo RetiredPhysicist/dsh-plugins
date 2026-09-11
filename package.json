@@ -1,6 +1,6 @@
 {
   "name": "dsh-atuin",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "DeepSeek Harness plugin: every user prompt you type (in the web UI) is appended to your atuin shell history, so it shows up in atuin search and shell integration.",
   "type": "module",
   "main": "dist/index.js",
@@ -37,6 +37,7 @@
     "typescript": "^5.5.0"
   },
   "dsh": {
+    "manifestVersion": 1,
     "bundle": {
       "patch": "./cordis.patch.yml"
     }
