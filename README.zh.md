@@ -4,7 +4,7 @@
 
 # dsh-dejavu-memory
 
-给 DeepSeek Harness 接上 **DejaVu**（Noc Memory） 长期记忆:会话开始 boot + 每日简报,记忆读写/搜索/更新/删除,后端是部署在 Cloudflare 上的 Noc Memory MCP 服务器。
+给 DeepSeek Harness 接上 **DejaVu** 长期记忆:会话开始 boot + 每日简报,记忆读写/搜索/更新/删除,后端是部署在 Cloudflare 上的 DejaVu MCP 服务器。
 
 > 由 [pi-dejavu-memory](https://github.com/RealAlexandreAI/pi-dejavu-memory) 移植,协议与工具名完全一致。
 

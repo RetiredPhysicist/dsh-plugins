@@ -7,7 +7,7 @@
 > **Renamed:** former npm/GitHub package `dsh-noc-memory` → **`dsh-dejavu-memory`**. Prefer this package; deprecate the old name when publishing.
 
 
-Connects DeepSeek Harness to **DejaVu** (Noc Memory): session-start boot + daily briefing, plus memory read / search / create / update / delete, backed by your own Noc Memory MCP server on Cloudflare.
+Connects DeepSeek Harness to **DejaVu**: session-start boot + daily briefing, plus memory read / search / create / update / delete, backed by your own DejaVu MCP server on Cloudflare.
 
 > Port of [pi-dejavu-memory](https://github.com/RealAlexandreAI/pi-dejavu-memory) — same protocol, same tool names.
 
