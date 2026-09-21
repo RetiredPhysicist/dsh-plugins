@@ -5,6 +5,8 @@
 //   browse(url, action?)   read a page as clean markdown (default)
 //   screenshot(url)        save a PNG of the page, returns local path
 //   pdf(url)               save a PDF of the page, returns local path
+//   crawl(url, ...)        multi-page crawl via /crawl (optional wait/poll)
+//   crawl_status(jobId)    poll / fetch crawl job results
 //
 // Credentials: `cf_api_token` in the plugin config (profile/settings layer) —
 // no env vars, no secrets in code.
@@ -15,7 +17,18 @@ import z from '@deepseek-ai/schemastery'
 import { mkdirSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
-import { browserRunAction, resolveConfig, type Action, type BrowserRunConfig } from './api.js'
+import {
+  browserRunAction,
+  crawl,
+  crawlStatus,
+  defaultCrawlWait,
+  resolveConfig,
+  type Action,
+  type BrowserRunConfig,
+  type CrawlFormat,
+  type CrawlJobResult,
+  type CrawlRecord,
+} from './api.js'
 
 export const name = 'cloudflare-browser-run'
 export const inject = ['tools', 'systemPrompt']
@@ -108,10 +121,10 @@ export function apply(ctx: Context, config: Config): void {
     name: 'tool:cloudflare-browser-run',
     order: 2950,
     text:
-      'Use the browse tool to fetch any public web page in a real headless ' +
-      'browser (Cloudflare Browser Run): it returns clean markdown, a screenshot ' +
-      '(PNG) or a PDF. Prefer it over web_fetch for JS-rendered pages, sites that ' +
-      'need a real browser, or when you need a screenshot. Only public http(s) URLs.',
+      'Use browse for a single public page (markdown / screenshot / pdf). Use crawl ' +
+      'to scrape multiple pages from one site (returns markdown per page; waits for ' +
+      'small limits). Use crawl_status to poll large crawl jobs. Prefer these over ' +
+      'web_fetch for JS-rendered pages. Only public http(s) URLs.',
   })
 
   const resolveToken = async (): Promise<{ ok: true; config: BrowserRunConfig } | { ok: false; error: string }> => {
@@ -212,5 +225,128 @@ export function apply(ctx: Context, config: Config): void {
     presentCall: presentCallFor('pdf'),
     presentResult: presentResultFor('pdf'),
     execute: (args, exec) => runAction({ ...args, action: 'pdf' }, exec),
+  })
+
+  const truncateRecord = (rec: CrawlRecord, maxMd = 4_000): CrawlRecord => {
+    const out: CrawlRecord = { url: rec.url, status: rec.status }
+    if (rec.metadata) out.metadata = rec.metadata
+    if (typeof rec.markdown === 'string') {
+      out.markdown =
+        rec.markdown.length > maxMd ? rec.markdown.slice(0, maxMd) + '\n…(truncated)' : rec.markdown
+    }
+    if (typeof rec.html === 'string') {
+      out.html = rec.html.length > maxMd ? rec.html.slice(0, maxMd) + '\n…(truncated)' : rec.html
+    }
+    if (rec.json !== undefined) out.json = rec.json
+    return out
+  }
+
+  const formatCrawlJob = (job: CrawlJobResult, maxRecords = 50) => {
+    const records = (job.records ?? []).slice(0, maxRecords).map((r) => truncateRecord(r))
+    return {
+      id: job.id,
+      status: job.status,
+      total: job.total,
+      finished: job.finished,
+      browserSecondsUsed: job.browserSecondsUsed,
+      cursor: job.cursor,
+      recordCount: records.length,
+      records,
+    }
+  }
+
+  register({
+    name: 'crawl',
+    description:
+      'Crawl a public site starting from a URL via Cloudflare Browser Run /crawl. ' +
+      'Follows links up to limit/depth and returns markdown (default) per page. ' +
+      'For small jobs (limit≤20) waits for completion by default; for larger jobs ' +
+      'returns a job id — then use crawl_status.',
+    parameters: {
+      url: { type: 'string', required: true, description: 'Starting public http(s) URL to crawl' },
+      limit: { type: 'number', description: 'Max pages to crawl (default 10)' },
+      depth: { type: 'number', description: 'Max link depth from the start URL' },
+      formats: {
+        type: 'array',
+        items: { type: 'string', enum: ['markdown', 'html', 'json'] },
+        description: 'Response formats (default [markdown])',
+      },
+      render: { type: 'boolean', description: 'Headless Chrome (true) or fast HTML fetch (false)' },
+      source: { type: 'string', enum: ['all', 'sitemaps', 'links'], description: 'URL discovery source' },
+      includePatterns: { type: 'array', items: { type: 'string' }, description: 'Only visit matching URL patterns' },
+      excludePatterns: { type: 'array', items: { type: 'string' }, description: 'Skip matching URL patterns' },
+      wait: {
+        type: 'boolean',
+        description: 'Poll until done (default true when limit≤20). If false, returns job id.',
+      },
+    },
+    output: OUTPUT,
+    isConcurrencySafe: () => true,
+    timeoutMs: 360_000,
+    presentCall: presentCallFor('crawl'),
+    presentResult: presentResultFor('crawl'),
+    execute: async (args) => {
+      const resolved = await resolveToken()
+      if (!resolved.ok) return { ok: false, error: 'error' in resolved ? resolved.error : 'unknown' }
+      const limit = typeof args.limit === 'number' ? args.limit : undefined
+      const wait = typeof args.wait === 'boolean' ? args.wait : defaultCrawlWait(limit)
+      const r = await crawl(resolved.config, {
+        url: String(args.url ?? ''),
+        limit,
+        depth: typeof args.depth === 'number' ? args.depth : undefined,
+        formats: (Array.isArray(args.formats) ? args.formats : ['markdown']) as CrawlFormat[],
+        render: typeof args.render === 'boolean' ? args.render : undefined,
+        source: args.source as 'all' | 'sitemaps' | 'links' | undefined,
+        includePatterns: Array.isArray(args.includePatterns) ? (args.includePatterns as string[]) : undefined,
+        excludePatterns: Array.isArray(args.excludePatterns) ? (args.excludePatterns as string[]) : undefined,
+        wait,
+      })
+      if (!r.ok) return { ok: false, error: 'error' in r ? r.error : 'unknown' }
+      if (r.job) return { ok: true, ...formatCrawlJob(r.job) }
+      return {
+        ok: true,
+        jobId: r.jobId,
+        status: 'running',
+        message: 'Crawl started. Poll with crawl_status(jobId) until status is completed.',
+      }
+    },
+  })
+
+  register({
+    name: 'crawl_status',
+    description:
+      'Check status or fetch results of a Cloudflare Browser Run crawl job by id. ' +
+      'Supports limit/cursor pagination and status filters on records.',
+    parameters: {
+      jobId: { type: 'string', required: true, description: 'Crawl job id from crawl' },
+      limit: { type: 'number', description: 'Max records to return' },
+      cursor: { type: 'string', description: 'Pagination cursor' },
+      status: {
+        type: 'string',
+        description: 'Filter records: queued|completed|disallowed|skipped|errored|cancelled',
+      },
+    },
+    output: OUTPUT,
+    isConcurrencySafe: () => true,
+    timeoutMs: 120_000,
+    presentCall: (args) => ({
+      card: 'generic',
+      kind: 'fetch',
+      title: `crawl_status ${String((args as { jobId?: unknown }).jobId ?? '').slice(0, 12)}`,
+    }),
+    presentResult: presentResultFor('crawl_status'),
+    execute: async (args) => {
+      const resolved = await resolveToken()
+      if (!resolved.ok) return { ok: false, error: 'error' in resolved ? resolved.error : 'unknown' }
+      const r = await crawlStatus(resolved.config, {
+        jobId: String(args.jobId ?? ''),
+        limit: typeof args.limit === 'number' ? args.limit : undefined,
+        cursor: args.cursor as string | number | undefined,
+        status: typeof args.status === 'string' ? args.status : undefined,
+      })
+      if (!r.ok) return { ok: false, error: 'error' in r ? r.error : 'unknown' }
+      if (r.job) return { ok: true, ...formatCrawlJob(r.job) }
+      return { ok: true, jobId: r.jobId }
+    },
   })
 }

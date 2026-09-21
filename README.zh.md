@@ -44,6 +44,8 @@ Account id:`dash.cloudflare.com/<ACCOUNT_ID>/...`。
 | `browse` | 抓取公开 URL → 干净 markdown(默认);`action` 可选 `screenshot` / `pdf` |
 | `screenshot` | 页面截图存为 PNG,返回本地路径 |
 | `pdf` | 页面渲染为 PDF,返回本地路径 |
+| `crawl` | 多页爬取(Browser Run `/crawl`,默认 markdown;小 limit 会等待完成) |
+| `crawl_status` | 按 job id 查询/拉取 crawl 结果 |
 
 ## 配置
 

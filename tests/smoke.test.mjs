@@ -27,14 +27,14 @@ describe('dsh-browser-run smoke', () => {
     assert.equal(name, 'cloudflare-browser-run')
   })
 
-  it('registers browse/screenshot/pdf tools', () => {
+  it('registers browse/screenshot/pdf/crawl tools', () => {
     const { ctx, registered } = makeCtx()
     applyBrowser(ctx, {
       cf_account_id: 'acc',
       cf_api_token: 'test-token',
     })
     const names = registered.map((t) => t.name).sort()
-    assert.deepEqual(names, ['browse', 'pdf', 'screenshot'])
+    assert.deepEqual(names, ['browse', 'crawl', 'crawl_status', 'pdf', 'screenshot'])
     // Config schema validates (Standard Schema protocol)
     const result = BrowserConfig['~standard'].validate({ cf_account_id: 'acc', cf_api_token: 't' })
     assert.equal(result.issues === undefined || result.issues.length === 0, true)
@@ -43,7 +43,7 @@ describe('dsh-browser-run smoke', () => {
   it('loads with no config (credentials surface on tool calls, not at boot)', () => {
     const { ctx, registered } = makeCtx()
     applyBrowser(ctx, {})
-    assert.equal(registered.length, 3)
+    assert.equal(registered.length, 5)
     const bare = BrowserConfig['~standard'].validate({})
     assert.equal(bare.issues === undefined || bare.issues.length === 0, true)
   })

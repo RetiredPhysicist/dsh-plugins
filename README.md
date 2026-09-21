@@ -44,6 +44,8 @@ Account id: `dash.cloudflare.com/<ACCOUNT_ID>/...`.
 | `browse` | fetch a public URL → clean markdown (default); `action` = `screenshot` \| `pdf` |
 | `screenshot` | save the page as PNG locally, returns the file path |
 | `pdf` | save the page as PDF locally, returns the file path |
+| `crawl` | multi-page crawl via Browser Run `/crawl` (markdown by default; waits for small limits) |
+| `crawl_status` | poll / fetch results for a crawl job id |
 
 ## Config
 
