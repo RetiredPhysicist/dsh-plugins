@@ -9,7 +9,13 @@ import {
   FirecrawlDevProvider,
   FirecrawlSearchProvider,
   FIRECRAWL_SEARCH_URL,
+  TINYFISH_FETCH_URL,
+  TINYFISH_SEARCH_URL,
+  TinyFishFetchProvider,
+  TinyFishSearchProvider,
+  isAcademicQuery,
   isDeveloperQuery,
+  isNewsQuery,
 } from '../src/index.ts'
 
 const SAMPLE =
@@ -78,6 +84,126 @@ describe('isDeveloperQuery', () => {
   it('does not match general queries', () => {
     assert.equal(isDeveloperQuery('TSLA stock price today'), false)
     assert.equal(isDeveloperQuery('best coffee in shenzhen'), false)
+  })
+})
+
+describe('isNewsQuery / isAcademicQuery', () => {
+  it('detects news intent', () => {
+    assert.equal(isNewsQuery('latest AI news today'), true)
+    assert.equal(isNewsQuery('what happened with the release'), true)
+    assert.equal(isNewsQuery('best coffee in shenzhen'), false)
+  })
+
+  it('detects academic intent', () => {
+    assert.equal(isAcademicQuery('arxiv paper on attention'), true)
+    assert.equal(isAcademicQuery('doi research journal citation'), true)
+    assert.equal(isAcademicQuery('best coffee in shenzhen'), false)
+  })
+})
+
+describe('TinyFishSearchProvider', () => {
+  it('sends X-API-Key and maps results with the publication date', async () => {
+    const orig = globalThis.fetch
+    let captured
+    globalThis.fetch = async (url, init) => {
+      captured = { url: String(url), init }
+      return new Response(
+        JSON.stringify({ results: [{ title: 'N', url: 'https://n.com', snippet: 's', date: '3 hours ago' }] }),
+        { status: 200 },
+      )
+    }
+    try {
+      const p = new TinyFishSearchProvider('tf-test-not-real')
+      assert.equal(p.available(), true)
+      const r = await p.search({ query: 'ai agents' })
+      assert.equal(captured.url.startsWith(TINYFISH_SEARCH_URL), true)
+      assert.equal(captured.init.headers['X-API-Key'], 'tf-test-not-real')
+      assert.equal(r.sources[0].title, 'N')
+      assert.equal(r.sources[0].publishedAt, '3 hours ago')
+    } finally {
+      globalThis.fetch = orig
+    }
+  })
+
+  it('sets domain_type=news for news queries', async () => {
+    const orig = globalThis.fetch
+    let url = ''
+    globalThis.fetch = async (input) => {
+      url = String(input)
+      return new Response(JSON.stringify({ results: [] }), { status: 200 })
+    }
+    try {
+      await new TinyFishSearchProvider('k').search({ query: 'latest breaking news' })
+      assert.match(url, /domain_type=news/)
+    } finally {
+      globalThis.fetch = orig
+    }
+  })
+
+  it('sets domain_type=research_paper for academic queries', async () => {
+    const orig = globalThis.fetch
+    let url = ''
+    globalThis.fetch = async (input) => {
+      url = String(input)
+      return new Response(JSON.stringify({ results: [] }), { status: 200 })
+    }
+    try {
+      await new TinyFishSearchProvider('k').search({ query: 'arxiv paper on rag' })
+      assert.match(url, /domain_type=research_paper/)
+    } finally {
+      globalThis.fetch = orig
+    }
+  })
+
+  it('throws on HTTP errors', async () => {
+    const orig = globalThis.fetch
+    globalThis.fetch = async () => new Response('{}', { status: 401 })
+    try {
+      await assert.rejects(() => new TinyFishSearchProvider('bad').search({ query: 'x' }), /HTTP 401/)
+    } finally {
+      globalThis.fetch = orig
+    }
+  })
+})
+
+describe('TinyFishFetchProvider', () => {
+  it('posts one URL and returns a text body', async () => {
+    const orig = globalThis.fetch
+    let captured
+    globalThis.fetch = async (url, init) => {
+      captured = { url: String(url), init }
+      return new Response(
+        JSON.stringify({ results: [{ url: 'https://a.com', final_url: 'https://a.com/', text: '# A' }], errors: [] }),
+        { status: 200 },
+      )
+    }
+    try {
+      const p = new TinyFishFetchProvider('tf-test-not-real')
+      const r = await p.fetch({ url: 'https://a.com' })
+      assert.equal(captured.url, TINYFISH_FETCH_URL)
+      assert.deepEqual(JSON.parse(captured.init.body).urls, ['https://a.com'])
+      assert.equal(r.statusCode, 200)
+      assert.equal(r.body.kind, 'text')
+      assert.equal(r.body.content, '# A')
+    } finally {
+      globalThis.fetch = orig
+    }
+  })
+
+  it('returns a non-2xx result on a per-URL failure', async () => {
+    const orig = globalThis.fetch
+    globalThis.fetch = async () =>
+      new Response(
+        JSON.stringify({ results: [], errors: [{ url: 'https://bad.com', error: 'invalid_url' }] }),
+        { status: 200 },
+      )
+    try {
+      const r = await new TinyFishFetchProvider('k').fetch({ url: 'https://bad.com' })
+      assert.equal(r.statusCode, 502)
+      assert.equal(r.body.content, 'invalid_url')
+    } finally {
+      globalThis.fetch = orig
+    }
   })
 })
 

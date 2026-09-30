@@ -1,21 +1,34 @@
 // dsh-all-search — DeepSeek Harness (Cordis) plugin.
 //
-// Registers a single WebSearchProvider (id anysearch) with ctx.web. AnySearch
-// is a MCP gateway that aggregates exa / tavily / firecrawl / context7 behind
-// one API key. When that key is set, queries stay on the gateway (developer-
-// intent queries may try the Firecrawl Developer Index first). When the
-// AnySearch key is absent, the same wrapper stays available and searches via
-// Firecrawl POST /v1/search — no Authorization header unless firecrawl_api_key
-// is set (then Bearer, own quota).
+// Registers one WebSearchProvider (id anysearch) and, when a TinyFish key is
+// configured, one WebFetchProvider (id tinyfish) with ctx.web. AnySearch is a
+// MCP gateway that aggregates exa / tavily / firecrawl / context7 behind one
+// API key. When that key is set, queries stay on the gateway (developer-intent
+// queries may try the Firecrawl Developer Index first). When the AnySearch key
+// is absent, the same wrapper stays available and searches via Firecrawl
+// POST /v1/search — no Authorization header unless firecrawl_api_key is set
+// (then Bearer, own quota).
 //
-// One registerSearchProvider call: the dsh-web seam errors on multiple usable
-// providers (WEB_PROVIDER_AMBIGUOUS) unless one is configured explicitly.
+// The dsh-web seam errors on multiple usable providers
+// (WEB_PROVIDER_AMBIGUOUS) unless one is configured explicitly, so this plugin
+// registers exactly one provider per capability. Search stays on the anysearch
+// wrapper; TinyFish competes inside it rather than registering a second search
+// provider. Fetch registers only when a TinyFish key exists, because the host
+// already supplies a local fetch provider.
 //
 // Privacy: API keys live in the plugin config only; they are never logged.
 
 import { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
-import type { WebSearchProvider, WebSearchRequest, WebSearchResult, WebSearchSource } from '@deepseek-ai/dsh-web'
+import type {
+  WebFetchProvider,
+  WebFetchRequest,
+  WebFetchResult,
+  WebSearchProvider,
+  WebSearchRequest,
+  WebSearchResult,
+  WebSearchSource,
+} from '@deepseek-ai/dsh-web'
 
 export const name = 'all-search'
 export const inject = ['web']
@@ -27,21 +40,46 @@ export interface Config {
   base_url?: string
   /** Firecrawl API key — Bearer quota for /v1/search; also enables Developer Index when AnySearch is configured. */
   firecrawl_api_key?: string
+  /** TinyFish API key — enables TinyFish search and the full-browser fetch provider. */
+  tinyfish_api_key?: string
+  /**
+   * Register TinyFish as the fetch provider. Off by default: the host may
+   * already provide a local fetch provider, and two usable fetch providers
+   * raise WEB_PROVIDER_AMBIGUOUS. Enable when the host has no fetch provider
+   * or when `fetchProvider` is pinned to `tinyfish`.
+   */
+  tinyfish_fetch?: boolean
 }
 
 export const Config: z<Config> = z.object({
   api_key: z.string().description('AnySearch API key (optional — without it, Firecrawl keyless search is used)'),
   base_url: z.string().description('AnySearch MCP endpoint override (default https://api.anysearch.com/mcp)'),
   firecrawl_api_key: z.string().description('Firecrawl API key (optional) — Bearer for Firecrawl quota; also enables Developer Index when AnySearch is configured'),
+  tinyfish_api_key: z.string().description('TinyFish API key (optional) — enables TinyFish search and full-browser fetch'),
+  tinyfish_fetch: z.boolean().description('Register TinyFish as the fetch provider (default false — the host usually supplies a local fetch provider)'),
 })
 
 const DEFAULT_BASE_URL = 'https://api.anysearch.com/mcp'
 export const FIRECRAWL_SEARCH_URL = 'https://api.firecrawl.dev/v1/search'
+export const TINYFISH_SEARCH_URL = 'https://api.search.tinyfish.ai'
+export const TINYFISH_FETCH_URL = 'https://api.fetch.tinyfish.ai'
 const DEVELOPER_QUERY_RE =
   /\b(repo|repos|repository|repositories|github|issue|issues|pull request|pull requests|commit|commits|branch|merge|openapi|readme|skill|skills|library|framework)\b/i
+const NEWS_QUERY_RE =
+  /\b(news|latest|today|breaking|announced|announcement|update|released|release|happened|current|recent)\b/i
+const ACADEMIC_QUERY_RE =
+  /\b(paper|papers|research|journal|doi|arxiv|scholar|academic|study|thesis|citation|citations)\b/i
 
 export function isDeveloperQuery(query: string): boolean {
   return DEVELOPER_QUERY_RE.test(query)
+}
+
+export function isNewsQuery(query: string): boolean {
+  return NEWS_QUERY_RE.test(query)
+}
+
+export function isAcademicQuery(query: string): boolean {
+  return ACADEMIC_QUERY_RE.test(query)
 }
 
 export class AnysearchProvider implements WebSearchProvider {
@@ -171,32 +209,128 @@ export class FirecrawlDevProvider implements WebSearchProvider {
   }
 }
 
+/** TinyFish search — free structured results, with news and academic modes. */
+export class TinyFishSearchProvider implements WebSearchProvider {
+  readonly id = 'tinyfish'
+  constructor(private readonly apiKey: string) {}
+
+  available(): boolean {
+    return Boolean(this.apiKey)
+  }
+
+  async search(request: WebSearchRequest, signal?: AbortSignal): Promise<WebSearchResult> {
+    const params = new URLSearchParams({ query: request.query })
+    if (isNewsQuery(request.query)) params.set('domain_type', 'news')
+    else if (isAcademicQuery(request.query)) params.set('domain_type', 'research_paper')
+
+    const resp = await fetch(`${TINYFISH_SEARCH_URL}?${params.toString()}`, {
+      headers: { 'X-API-Key': this.apiKey },
+      signal,
+    })
+    if (!resp.ok) throw new Error(`TinyFish search HTTP ${resp.status}`)
+    const data = (await resp.json()) as { results?: Array<Record<string, unknown>> }
+    const sources: WebSearchSource[] = (data.results ?? []).map((r: any) => ({
+      url: r.url ?? '',
+      title: r.title ?? '',
+      snippet: r.snippet ?? '',
+      ...(r.date ? { publishedAt: String(r.date) } : {}),
+    }))
+    const truncated = request.maxResults !== undefined && sources.length > request.maxResults
+    return { sources: truncated ? sources.slice(0, request.maxResults) : sources, truncated }
+  }
+}
+
+/**
+ * TinyFish fetch — full-browser rendering and clean extraction.
+ *
+ * The seam's fetch result carries only url/statusCode/body, so a per-URL
+ * failure is surfaced as a non-2xx status with the error text as the body.
+ */
+export class TinyFishFetchProvider implements WebFetchProvider {
+  readonly id = 'tinyfish'
+  constructor(private readonly apiKey: string) {}
+
+  available(): boolean {
+    return Boolean(this.apiKey)
+  }
+
+  async fetch(request: WebFetchRequest, signal?: AbortSignal): Promise<WebFetchResult> {
+    const resp = await fetch(TINYFISH_FETCH_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': this.apiKey },
+      signal,
+      body: JSON.stringify({ urls: [request.url], format: 'markdown', per_url_timeout_ms: 45000 }),
+    })
+    if (!resp.ok) throw new Error(`TinyFish fetch HTTP ${resp.status}`)
+    const data = (await resp.json()) as {
+      results?: Array<{ url: string; final_url?: string; text?: string | null }>
+      errors?: Array<{ url: string; error: string }>
+    }
+    const page = data.results?.find((r) => r.text)
+    if (page?.text !== undefined && page.text !== null) {
+      return {
+        url: page.final_url ?? page.url,
+        statusCode: 200,
+        body: { kind: 'text', content: page.text },
+        truncated: false,
+      }
+    }
+    const failure = data.errors?.[0]
+    return {
+      url: failure?.url ?? request.url,
+      statusCode: 502,
+      body: { kind: 'text', content: failure?.error ?? 'TinyFish fetch returned no content' },
+      truncated: false,
+    }
+  }
+}
+
 export function apply(ctx: Context, config: Config): void {
   const anysearch = new AnysearchProvider(config.api_key ?? '', config.base_url ?? DEFAULT_BASE_URL)
   const firecrawl = new FirecrawlSearchProvider(config.firecrawl_api_key)
   const devIndex = config.firecrawl_api_key ? new FirecrawlDevProvider(config.firecrawl_api_key) : null
+  const tinyfish = config.tinyfish_api_key ? new TinyFishSearchProvider(config.tinyfish_api_key) : null
 
   // Single provider to avoid dsh-web's WEB_PROVIDER_AMBIGUOUS on multiple
-  // usable providers. AnySearch key → gateway (Dev Index first for developer
-  // queries). No AnySearch key → Firecrawl /v1/search (keyless unless a
-  // firecrawl_api_key is set).
+  // usable providers. Priority: Dev Index (developer queries) → TinyFish
+  // (news/academic) → AnySearch gateway → TinyFish → Firecrawl /v1/search.
   const wrapper: WebSearchProvider = {
     id: 'anysearch',
-    available: () => Boolean(config.api_key) || firecrawl.available(),
+    available: () => Boolean(config.api_key) || Boolean(config.tinyfish_api_key) || firecrawl.available(),
     async search(request, signal) {
-      if (config.api_key) {
-        if (devIndex && isDeveloperQuery(request.query)) {
-          try {
-            const dev = await devIndex.search(request, signal)
-            if (dev.sources.length > 0) return dev
-          } catch {
-            // fall through to AnySearch
-          }
+      if (devIndex && isDeveloperQuery(request.query)) {
+        try {
+          const dev = await devIndex.search(request, signal)
+          if (dev.sources.length > 0) return dev
+        } catch {
+          // fall through to the next provider
         }
+      }
+      if (tinyfish && (isNewsQuery(request.query) || isAcademicQuery(request.query))) {
+        try {
+          const tf = await tinyfish.search(request, signal)
+          if (tf.sources.length > 0) return tf
+        } catch {
+          // fall through to the next provider
+        }
+      }
+      if (config.api_key) {
         return anysearch.search(request, signal)
+      }
+      if (tinyfish) {
+        try {
+          const tf = await tinyfish.search(request, signal)
+          if (tf.sources.length > 0) return tf
+        } catch {
+          // fall through to Firecrawl
+        }
       }
       return firecrawl.search(request, signal)
     },
   }
   ctx.web.registerSearchProvider(wrapper)
+
+  if (config.tinyfish_fetch && config.tinyfish_api_key && typeof ctx.web.registerFetchProvider === 'function') {
+    ctx.web.registerFetchProvider(new TinyFishFetchProvider(config.tinyfish_api_key))
+  }
 }
