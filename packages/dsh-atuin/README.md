@@ -6,7 +6,7 @@
 
 Record every prompt you type into DeepSeek Harness into your **atuin** shell history — searchable with `atuin search` and your shell integration (Ctrl-R).
 
-> Port of [pi-atuin](https://github.com/RealAlexandreAI/pi-atuin). dsh has no terminal UI; this is its atuin bridge.
+> Port of [pi-atuin](https://github.com/RetiredPhysicist/pi-plugins/tree/main/packages/pi-atuin). dsh has no terminal UI; this is its atuin bridge.
 
 [English](README.md) · [中文](README.zh.md)
 
