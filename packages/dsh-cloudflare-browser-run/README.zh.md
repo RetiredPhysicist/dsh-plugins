@@ -6,7 +6,7 @@
 
 给 DeepSeek Harness 的 agent **真正的浏览器访问能力**:headless Chrome 跑在 Cloudflare 网络上,JS 渲染页面、截图、PDF 都能处理。
 
-> 由 [pi-cloudflare-browser-run](https://github.com/RealAlexandreAI/pi-cloudflare-browser-run) 移植,完全符合 dsh 的 Cordis 插件规范。
+> 由 [pi-cloudflare-browser-run](https://github.com/RetiredPhysicist/pi-plugins/tree/main/packages/pi-cloudflare-browser-run) 移植,完全符合 dsh 的 Cordis 插件规范。
 
 [English](README.md) · [中文](README.zh.md)
 

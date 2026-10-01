@@ -6,7 +6,7 @@
 
 A DeepSeek Harness plugin that gives the agent **real browser access**: headless Chrome on Cloudflare's network, so JS-rendered pages, screenshots, and PDFs all just work.
 
-> Port of [pi-cloudflare-browser-run](https://github.com/RealAlexandreAI/pi-cloudflare-browser-run), built to the dsh (Cordis) plugin spec.
+> Port of [pi-cloudflare-browser-run](https://github.com/RetiredPhysicist/pi-plugins/tree/main/packages/pi-cloudflare-browser-run), built to the dsh (Cordis) plugin spec.
 
 [English](README.md) · [中文](README.zh.md)
 
