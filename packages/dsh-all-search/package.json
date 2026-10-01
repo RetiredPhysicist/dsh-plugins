@@ -1,6 +1,6 @@
 {
   "name": "dsh-all-search",
-  "version": "0.2.11",
+  "version": "0.2.12",
   "description": "DeepSeek Harness plugin: AnySearch-backed web search provider with optional TinyFish search and full-browser fetch, registered into ctx.web.",
   "type": "module",
   "main": "dist/index.js",
