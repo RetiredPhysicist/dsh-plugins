@@ -1,0 +1,13 @@
+# Plugin bundle for dsh-cloudflare-browser-run.
+# Load order and config follow the dsh bundle model: profiles list this
+# package, this patch inserts the plugin row. Configure credentials via the
+# profile/settings layer that overrides this row:
+#
+#   - id: cloudflare-browser-run
+#     name: 'dsh-cloudflare-browser-run'
+#     config:
+#       cf_api_token: <your token>
+#       cf_account_id: <your account id>
+- insert:
+    - id: cloudflare-browser-run
+      name: 'dsh-cloudflare-browser-run'
