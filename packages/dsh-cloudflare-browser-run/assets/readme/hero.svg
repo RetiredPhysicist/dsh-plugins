@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="100%" role="img" aria-label="dsh-cloudflare-browser-run — real browser access for DeepSeek Harness">
+  <title>dsh-cloudflare-browser-run hero</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0e1524"/>
+      <stop offset="1" stop-color="#1a2332"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f6821f"/>
+      <stop offset="1" stop-color="#ff9e40"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="300" rx="20" fill="url(#bg)"/>
+
+  <!-- title block -->
+  <text x="64" y="86" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif" font-size="46" font-weight="700" fill="#f5f7fa">dsh-cloudflare-browser-run</text>
+  <text x="64" y="128" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif" font-size="24" fill="#9aa7b8">Real browser access for DeepSeek Harness</text>
+  <rect x="64" y="150" width="180" height="6" rx="3" fill="url(#accent)"/>
+
+  <!-- browser window -->
+  <rect x="64" y="182" width="360" height="92" rx="10" fill="#121b2b" stroke="#2b3a52" stroke-width="2"/>
+  <circle cx="84" cy="206" r="6" fill="#ff5f57"/>
+  <circle cx="106" cy="206" r="6" fill="#febc2e"/>
+  <circle cx="128" cy="206" r="6" fill="#28c840"/>
+  <rect x="150" y="194" width="250" height="24" rx="6" fill="#1c2840"/>
+  <text x="166" y="210" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" fill="#7f8ea3">example.com</text>
+  <rect x="84" y="232" width="240" height="26" rx="4" fill="#1c2840"/>
+  <rect x="84" y="266" width="160" height="4" rx="2" fill="#2b3a52"/>
+  <rect x="256" y="266" width="120" height="4" rx="2" fill="#2b3a52"/>
+
+  <!-- capability cards -->
+  <g font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif">
+    <rect x="480" y="182" width="210" height="92" rx="12" fill="#16202f" stroke="#2b3a52" stroke-width="2"/>
+    <text x="498" y="216" font-size="26" font-weight="700" fill="#f6821f">markdown</text>
+    <text x="498" y="244" font-size="16" fill="#9aa7b8">clean page text</text>
+    <text x="498" y="264" font-size="14" fill="#6b7a90">JS-rendered pages work</text>
+
+    <rect x="716" y="182" width="210" height="92" rx="12" fill="#16202f" stroke="#2b3a52" stroke-width="2"/>
+    <text x="734" y="216" font-size="26" font-weight="700" fill="#f6821f">screenshot</text>
+    <text x="734" y="244" font-size="16" fill="#9aa7b8">PNG saved locally</text>
+    <text x="734" y="264" font-size="14" fill="#6b7a90">returns the file path</text>
+
+    <rect x="952" y="182" width="184" height="92" rx="12" fill="#16202f" stroke="#2b3a52" stroke-width="2"/>
+    <text x="970" y="216" font-size="26" font-weight="700" fill="#f6821f">pdf</text>
+    <text x="970" y="244" font-size="16" fill="#9aa7b8">page rendered to PDF</text>
+    <text x="970" y="264" font-size="14" fill="#6b7a90">saved locally</text>
+  </g>
+</svg>
