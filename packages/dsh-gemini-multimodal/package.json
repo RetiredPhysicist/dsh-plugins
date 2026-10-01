@@ -16,6 +16,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "node --import tsx --test tests/*.mjs",
+    "test:ci": "node --import tsx --test tests/smoke.test.mjs",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
