@@ -12,7 +12,7 @@ With `firecrawl_api_key` and an AnySearch key, developer-intent queries (repo / 
 
 With `tinyfish_api_key`, news and academic queries route to TinyFish first (`domain_type=news` / `research_paper`), then fall back to AnySearch or Firecrawl. Set `tinyfish_fetch: true` to also register TinyFish as the fetch provider for full-browser page rendering.
 
-> Port of [pi-all-search](https://github.com/RealAlexandreAI/pi-all-search).
+> Port of [pi-all-search](https://github.com/RetiredPhysicist/pi-plugins/tree/main/packages/pi-all-search).
 
 [English](README.md) · [中文](README.zh.md)
 

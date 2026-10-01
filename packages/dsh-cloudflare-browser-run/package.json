@@ -46,7 +46,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/RealAlexandreAI/dsh-cloudflare-browser-run"
+    "url": "git+https://github.com/RetiredPhysicist/dsh-plugins.git",
+    "directory": "packages/dsh-cloudflare-browser-run"
   },
   "engines": {
     "node": ">=20.0.0"

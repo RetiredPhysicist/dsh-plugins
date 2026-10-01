@@ -6,7 +6,7 @@
 
 给 DeepSeek Harness 接上 **DejaVu** 长期记忆:会话开始 boot + 每日简报,记忆读写/搜索/更新/删除,后端是部署在 Cloudflare 上的 DejaVu MCP 服务器。
 
-> 由 [pi-dejavu-memory](https://github.com/RealAlexandreAI/pi-dejavu-memory) 移植,协议与工具名完全一致。
+> 由 [pi-dejavu-memory](https://github.com/RetiredPhysicist/pi-plugins/tree/main/packages/pi-dejavu-memory) 移植,协议与工具名完全一致。
 
 [English](README.md) · [中文](README.zh.md)
 
@@ -67,5 +67,5 @@ MIT
 ## 相关
 
 - [DejaVu](https://github.com/RealAlexandreAI/DejaVu) — 本插件连接的 Cloudflare MCP 记忆服务器
-- [pi-dejavu-memory](https://github.com/RealAlexandreAI/pi-dejavu-memory) — 面向 Pi 的同一套记忆工具
+- [pi-dejavu-memory](https://github.com/RetiredPhysicist/pi-plugins/tree/main/packages/pi-dejavu-memory) — 面向 Pi 的同一套记忆工具
 - [DejaVu_memory](https://github.com/Dataojitori/DejaVu_memory) — 上游项目

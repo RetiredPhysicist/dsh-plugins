@@ -6,7 +6,7 @@
 
 把你在 DeepSeek Harness 里输入的每一句话写进 **atuin** shell 历史——`atuin search`、shell 集成(Ctrl-R)里都能搜到。
 
-> 由 [pi-atuin](https://github.com/RealAlexandreAI/pi-atuin) 移植。dsh 没有终端 UI,这就是它的 atuin 桥。
+> 由 [pi-atuin](https://github.com/RetiredPhysicist/pi-plugins/tree/main/packages/pi-atuin) 移植。dsh 没有终端 UI,这就是它的 atuin 桥。
 
 [English](README.md) · [中文](README.zh.md)
 

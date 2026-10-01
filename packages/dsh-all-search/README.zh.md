@@ -10,7 +10,7 @@
 
 设置 tinyfish_api_key 后,新闻与学术查询优先走 TinyFish(`domain_type=news` / `research_paper`),失败再回落 AnySearch 或 Firecrawl。设置 tinyfish_fetch: true 会把 TinyFish 注册为 fetch provider,用于全浏览器页面渲染。
 
-> 由 [pi-all-search](https://github.com/RealAlexandreAI/pi-all-search) 移植。
+> 由 [pi-all-search](https://github.com/RetiredPhysicist/pi-plugins/tree/main/packages/pi-all-search) 移植。
 
 [English](README.md) · [中文](README.zh.md)
 

@@ -45,7 +45,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/RealAlexandreAI/dsh-all-search"
+    "url": "git+https://github.com/RetiredPhysicist/dsh-plugins.git",
+    "directory": "packages/dsh-all-search"
   },
   "engines": {
     "node": ">=20.0.0"
