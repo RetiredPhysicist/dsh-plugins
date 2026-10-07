@@ -80,3 +80,5 @@ DSH_TEST_CF_TOKEN=<token> DSH_TEST_CF_ACCOUNT=<account> node --import tsx tests/
 ## License
 
 MIT
+
+<!-- ci-parallel bench 2026-10-07T08:32:52+08:00 -->

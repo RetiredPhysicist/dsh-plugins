@@ -76,3 +76,5 @@ MIT
 
 - **0.1.1** — bump for CI publish validation; zero-config default provider (antigravity_cli) with friendly setup guidance.
 - **0.1.0** — initial release: dual providers (gemini_api / antigravity_cli), 4 multimodal tools.
+
+<!-- ci-parallel bench 2026-10-07T08:32:52+08:00 -->
