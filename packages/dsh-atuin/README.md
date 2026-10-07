@@ -72,3 +72,5 @@ node --import tsx tests/real/real-atuin.mjs
 ## License
 
 MIT
+
+<!-- ci-parallel bench 2026-10-07T08:32:52+08:00 -->
