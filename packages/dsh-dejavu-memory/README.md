@@ -73,5 +73,3 @@ MIT
 - [DejaVu](https://github.com/RealAlexandreAI/DejaVu) — the Cloudflare MCP memory server this plugin talks to
 - [pi-dejavu-memory](https://github.com/RetiredPhysicist/pi-plugins/tree/main/packages/pi-dejavu-memory) — same memory tools for Pi
 - [DejaVu_memory](https://github.com/Dataojitori/DejaVu_memory) — upstream project
-
-<!-- ci-parallel bench 2026-10-07T08:32:52+08:00 -->
