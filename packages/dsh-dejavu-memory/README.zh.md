@@ -8,6 +8,12 @@
 
 > 由 [pi-dejavu-memory](https://github.com/RetiredPhysicist/pi-plugins/tree/main/packages/pi-dejavu-memory) 移植,协议与工具名完全一致。
 
+另有 **ChatGPT / Codex 插件** [dejavu-memory](https://github.com/RetiredPhysicist/openai-plugins/tree/main/plugins/dejavu-memory),接同一个记忆服务器,但在聊天客户端里把记忆树画成可交互的知识图谱;本插件只提供工具。
+
+<p align="center">
+  <img src="assets/readme/dejavu-memory-search.webp" width="100%" alt="Codex 中的 DejaVu Memory 插件：记忆树的可交互知识图谱，搜索命中高亮，节点详情面板展开">
+</p>
+
 [English](README.md) · [中文](README.zh.md)
 
 ## 工具
@@ -67,5 +73,6 @@ MIT
 ## 相关
 
 - [DejaVu](https://github.com/RealAlexandreAI/DejaVu) — 本插件连接的 Cloudflare MCP 记忆服务器
+- [dejavu-memory(ChatGPT / Codex 版)](https://github.com/RetiredPhysicist/openai-plugins/tree/main/plugins/dejavu-memory) — 同一个记忆服务器,另有可交互的知识图谱
 - [pi-dejavu-memory](https://github.com/RetiredPhysicist/pi-plugins/tree/main/packages/pi-dejavu-memory) — 面向 Pi 的同一套记忆工具
 - [DejaVu_memory](https://github.com/Dataojitori/DejaVu_memory) — 上游项目

@@ -11,6 +11,12 @@ Connects DeepSeek Harness to **DejaVu**: session-start boot + daily briefing, pl
 
 > Port of [pi-dejavu-memory](https://github.com/RetiredPhysicist/pi-plugins/tree/main/packages/pi-dejavu-memory) — same protocol, same tool names.
 
+There is also a **ChatGPT and Codex plugin**, [dejavu-memory](https://github.com/RetiredPhysicist/openai-plugins/tree/main/plugins/dejavu-memory) — the same memory server, but with an interactive knowledge graph of the tree inside the chat client. This plugin stays tool-only.
+
+<p align="center">
+  <img src="assets/readme/dejavu-memory-search.webp" width="100%" alt="The DejaVu Memory plugin in Codex: an interactive graph of the memory tree with search hits highlighted and the node inspector open">
+</p>
+
 [English](README.md) · [中文](README.zh.md)
 
 ## Tools
@@ -71,5 +77,6 @@ MIT
 ## Related
 
 - [DejaVu](https://github.com/RealAlexandreAI/DejaVu) — the Cloudflare MCP memory server this plugin talks to
+- [dejavu-memory for ChatGPT and Codex](https://github.com/RetiredPhysicist/openai-plugins/tree/main/plugins/dejavu-memory) — same memory server, with an interactive knowledge graph
 - [pi-dejavu-memory](https://github.com/RetiredPhysicist/pi-plugins/tree/main/packages/pi-dejavu-memory) — same memory tools for Pi
 - [DejaVu_memory](https://github.com/Dataojitori/DejaVu_memory) — upstream project
