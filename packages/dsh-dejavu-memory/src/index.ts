@@ -252,7 +252,7 @@ export function apply(ctx: Context, config: Config): void {
       presentationMeta: () => ({ action: 'boot' }),
     },
     isConcurrencySafe: () => true,
-    presentCall: presentCallFor('dejavu_boot', () => 'load core + recent + triggers + briefing'),
+    presentCall: presentCallFor('dejavu_boot', () => 'load boot + recent + triggers + briefing'),
     presentResult: presentResultFor('dejavu_boot'),
     async execute(_args, _exec) {
       const c = await client()
@@ -279,9 +279,9 @@ export function apply(ctx: Context, config: Config): void {
 
   register({
     name: 'dejavu_read',
-    description: 'Read a memory by URI. Use system:// URIs or memory paths like core://agent.',
+    description: 'Read a memory by URI. Use system:// URIs or memory paths like dejavu://agent.',
     parameters: {
-      uri: { type: 'string', required: true, description: 'Memory URI (e.g., core://agent, system://boot)' },
+      uri: { type: 'string', required: true, description: 'Memory URI (e.g., dejavu://agent, system://boot)' },
     },
     output: {
       schema: { type: 'string' },
@@ -335,7 +335,7 @@ export function apply(ctx: Context, config: Config): void {
     description:
       'Create a new memory node. Include [Baseline], [Deviation], [Result], [Reusable judgment] for behavior records.',
     parameters: {
-      parent_uri: { type: 'string', required: true, description: 'Parent URI (e.g., core://)' },
+      parent_uri: { type: 'string', required: true, description: 'Parent URI (e.g., dejavu://)' },
       content: { type: 'string', required: true, description: 'Memory content (Markdown supported)' },
       priority: { type: 'number', description: 'Priority (0=highest, default 2)' },
       disclosure: { type: 'string', required: true, description: "When to recall this memory (e.g., 'When discussing X')" },
