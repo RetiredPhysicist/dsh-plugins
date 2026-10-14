@@ -14,12 +14,12 @@
 
 | 工具 | 说明 |
 |---|---|
-| `noc_boot` | 会话开始加载：`system://boot`、`system://recent/5`、`system://triggers`，再 best-effort 读 `system://briefing`；随后读 `system://focus`（`recent` 是 briefing 子集——boot 之后不必再单独读） |
-| `noc_read` | 按 URI 读记忆(`system://…`、`noc://agent`…) |
-| `noc_search` | 搜记忆(语义 + 关键词 / 触发词召回，服务端 `search_memory`) |
-| `noc_create` | 新建记忆节点(支持 `[Baseline]`/`[Deviation]`/`[Result]`/`[Reusable judgment]`) |
-| `noc_update` | 全文替换、patch(old_string/new_string)或 append;可选 `relation` |
-| `noc_delete` | 按 URI 删除记忆(`delete_memory`) |
+| `dejavu_boot` | 会话开始加载：`system://boot`、`system://recent/5`、`system://triggers`，再 best-effort 读 `system://briefing`；随后读 `system://focus`（`recent` 是 briefing 子集——boot 之后不必再单独读） |
+| `dejavu_read` | 按 URI 读记忆(`system://…`、`dejavu://agent`…) |
+| `dejavu_search` | 搜记忆(语义 + 关键词 / 触发词召回，服务端 `search_memory`) |
+| `dejavu_create` | 新建记忆节点(支持 `[Baseline]`/`[Deviation]`/`[Result]`/`[Reusable judgment]`) |
+| `dejavu_update` | 全文替换、patch(old_string/new_string)或 append;可选 `relation` |
+| `dejavu_delete` | 按 URI 删除记忆(`delete_memory`) |
 
 ## 快速开始
 
@@ -54,11 +54,11 @@ dsh plugin --profile web add dsh-dejavu-memory
 | `mcp_url` | 是 | 你的 DejaVu MCP 端点(Streamable HTTP) |
 | `mcp_auth` | 否 | 遗留字段；优先用 `mcp_headers` 传 Cloudflare Access service token |
 
-> **从 dsh-DejaVu-memory(≤0.1.x)升级:** 已改名为 `dsh-dejavu-memory`,工具名 `DejaVu_*` → `noc_*`。删除旧插件后重新添加新包;更新提示词里所有 `DejaVu_*` 工具引用。
+> **从 dsh-noc-memory(≤0.1.x)升级:** 已改名为 `dsh-dejavu-memory`,工具名 `noc_*` → `dejavu_*`。删除旧插件后重新添加新包;更新提示词里所有旧工具引用。
 
-## 为什么叫 noc_*(不叫 DejaVu_*)?
+## 为什么叫 dejavu_*(不叫 noc_*)?
 
-部分模型会先探测 `read_mcp_resource` 再调用记忆工具,浪费一次往返([上游 issue #32](https://github.com/Dataojitori/DejaVu_memory/issues/32))。工具列表与 boot 协议提示词里显式的 `noc_boot` / `noc_read` 命名,能把模型直接引导到正确工具——无需 resource 兼容层。
+部分模型会先探测 `read_mcp_resource` 再调用记忆工具,浪费一次往返([上游 issue #32](https://github.com/Dataojitori/nocturne_memory/issues/32))。工具列表与 boot 协议提示词里显式的 `dejavu_boot` / `dejavu_read` 命名,能把模型直接引导到正确工具——无需 resource 兼容层。
 
 ## License
 

@@ -1,6 +1,6 @@
 # Plugin bundle for dsh-dejavu-memory.
-# Registers the DejaVu memory tools (noc_boot / read / search /
-# create / update / delete). Configure your own DejaVu MCP server:
+# Registers the DejaVu memory tools (dejavu_boot / dejavu_read / dejavu_search /
+# dejavu_create / dejavu_update / dejavu_delete). Configure your own DejaVu MCP server:
 #
 #   - id: dejavu
 #     name: 'dsh-dejavu-memory'

@@ -17,12 +17,12 @@ Connects DeepSeek Harness to **DejaVu**: session-start boot + daily briefing, pl
 
 | tool | what it does |
 |---|---|
-| `noc_boot` | load at session start: `system://boot`, `system://recent/5`, `system://triggers`, then best-effort `system://briefing`; afterward read `system://focus` (recent is a briefing subset — no need to re-read it after boot) |
-| `noc_read` | read a memory by URI (`system://…`, `noc://agent`, …) |
-| `noc_search` | search memories (semantic + keyword / trigger recall via `search_memory`) |
-| `noc_create` | create a memory node (`[Baseline]`/`[Deviation]`/`[Result]`/`[Reusable judgment]`) |
-| `noc_update` | full replace, patch (old_string/new_string), or append; optional `relation` |
-| `noc_delete` | delete a memory by URI (`delete_memory`) |
+| `dejavu_boot` | load at session start: `system://boot`, `system://recent/5`, `system://triggers`, then best-effort `system://briefing`; afterward read `system://focus` (recent is a briefing subset — no need to re-read it after boot) |
+| `dejavu_read` | read a memory by URI (`system://…`, `dejavu://agent`, …) |
+| `dejavu_search` | search memories (semantic + keyword / trigger recall via `search_memory`) |
+| `dejavu_create` | create a memory node (`[Baseline]`/`[Deviation]`/`[Result]`/`[Reusable judgment]`) |
+| `dejavu_update` | full replace, patch (old_string/new_string), or append; optional `relation` |
+| `dejavu_delete` | delete a memory by URI (`delete_memory`) |
 
 ## Quick start
 
@@ -60,9 +60,9 @@ For a server behind Cloudflare Access (e.g. dejavu.example.com), use the **servi
 
 > **Upgrading from dsh-noc-memory:** package renamed to `dsh-dejavu-memory`. Remove the old plugin and re-add; point config `id` at `dejavu`.
 
-## Why noc_* (not DejaVu_*)?
+## Why dejavu_* (not noc_*)?
 
-Some agents probe `read_mcp_resource` before reaching for a memory tool, wasting a round trip ([upstream issue #32](https://github.com/Dataojitori/DejaVu_memory/issues/32)). Explicit `noc_boot` / `noc_read` naming in the tool list and boot-protocol prompt steers models straight to the right tool — no resource shim required.
+Some agents probe `read_mcp_resource` before reaching for a memory tool, wasting a round trip ([upstream issue #32](https://github.com/Dataojitori/nocturne_memory/issues/32)). Explicit `dejavu_boot` / `dejavu_read` naming in the tool list and boot-protocol prompt steers models straight to the right tool — no resource shim required.
 
 ## License
 

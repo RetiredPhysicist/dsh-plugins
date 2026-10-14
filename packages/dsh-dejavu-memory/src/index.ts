@@ -4,8 +4,8 @@
 // backed by YOUR OWN Noc MCP server (mcp_url). Ported from
 // pi-dejavu-memory — same MCP protocol, same boot protocol, same tools.
 //
-// Tools: noc_boot (session-start memory load), noc_read,
-// noc_search, noc_create, noc_update, noc_delete.
+// Tools: dejavu_boot (session-start memory load), dejavu_read,
+// dejavu_search, dejavu_create, dejavu_update, dejavu_delete.
 //
 // Privacy: memories live on your own MCP server; the plugin is a thin
 // client. The auth token comes from the plugin config (mcp_auth) — never logged.
@@ -14,7 +14,7 @@ import { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import { defineTool } from '@deepseek-ai/dsh-tools'
 
-export const name = 'noc-memory'
+export const name = 'dejavu-memory'
 export const inject = ['tools', 'systemPrompt']
 
 export interface Config {
@@ -76,7 +76,7 @@ const REQUEST_TIMEOUT_MS = 30_000
 /** Boot resources read via read_memory (boot + recent + triggers). */
 export const BOOT_URIS = ['system://boot', 'system://recent/5', 'system://triggers'] as const
 
-/** MCP tool names as exposed by cf-noc-mem (must stay in sync with the server). */
+/** MCP tool names as exposed by the DejaVu MCP server (must stay in sync with the server). */
 export const MCP_TOOLS = {
   read: 'read_memory',
   search: 'search_memory', // not search_memories
@@ -198,24 +198,24 @@ class NocClient {
 
 export function apply(ctx: Context, config: Config): void {
   ctx.systemPrompt.section({
-    name: 'tool:noc-memory',
+    name: 'tool:dejavu-memory',
     order: 2960,
     text:
       'You have long-term memory via the Noc MCP server. At the start of ' +
-      'substantial work call noc_boot to load system://boot, system://recent/5, ' +
+      'substantial work call dejavu_boot to load system://boot, system://recent/5, ' +
       'system://triggers, and best-effort system://briefing; then ' +
       'read system://focus to resume active working trees (recent is a briefing ' +
-      'subset — no need to re-read it after boot); use noc_search before ' +
+      'subset — no need to re-read it after boot); use dejavu_search before ' +
       'answering from memory — describe what you need in natural language, not ' +
       'just keywords (semantic recall finds memories with no shared words); ' +
-      'persist valuable outcomes with noc_create; revise with noc_update; remove ' +
-      'dead nodes with noc_delete. ' +
+      'persist valuable outcomes with dejavu_create; revise with dejavu_update; remove ' +
+      'dead nodes with dejavu_delete. ' +
       'Periodically (after many new memories or when you repeat a mistake) ' +
-      'run a memory audit: noc_read system://diagnostic/noc, then fix what it ' +
+      'run a memory audit: dejavu_read system://diagnostic/dejavu, then fix what it ' +
       'flags — never-reaccessed high-priority memories (disclosure/placement), ' +
-      'stale or cold candidates (noc_delete if dead, demote if niche), crowded ' +
-      'parents (regroup), contradictions (merge via noc_update). Always ' +
-      'noc_read a node in full before changing it.',
+      'stale or cold candidates (dejavu_delete if dead, demote if niche), crowded ' +
+      'parents (regroup), contradictions (merge via dejavu_update). Always ' +
+      'dejavu_read a node in full before changing it.',
   })
 
   const resolveAuth = async (): Promise<string> => config.mcp_auth ?? ''
@@ -241,7 +241,7 @@ export function apply(ctx: Context, config: Config): void {
   }
 
   register({
-    name: 'noc_boot',
+    name: 'dejavu_boot',
     description:
       'Call at session start. Loads core memories, recent context, triggers ' +
       '(system://triggers), and today\'s working-memory briefing. Self-discipline startup protocol.',
@@ -252,8 +252,8 @@ export function apply(ctx: Context, config: Config): void {
       presentationMeta: () => ({ action: 'boot' }),
     },
     isConcurrencySafe: () => true,
-    presentCall: presentCallFor('noc_boot', () => 'load core + recent + triggers + briefing'),
-    presentResult: presentResultFor('noc_boot'),
+    presentCall: presentCallFor('dejavu_boot', () => 'load core + recent + triggers + briefing'),
+    presentResult: presentResultFor('dejavu_boot'),
     async execute(_args, _exec) {
       const c = await client()
       const out: string[] = []
@@ -278,7 +278,7 @@ export function apply(ctx: Context, config: Config): void {
   })
 
   register({
-    name: 'noc_read',
+    name: 'dejavu_read',
     description: 'Read a memory by URI. Use system:// URIs or memory paths like core://agent.',
     parameters: {
       uri: { type: 'string', required: true, description: 'Memory URI (e.g., core://agent, system://boot)' },
@@ -289,8 +289,8 @@ export function apply(ctx: Context, config: Config): void {
       presentationMeta: (args: any) => ({ action: 'read', uri: args.uri ?? '' }),
     },
     isConcurrencySafe: () => true,
-    presentCall: presentCallFor('noc_read', (args) => args.uri),
-    presentResult: presentResultFor('noc_read'),
+    presentCall: presentCallFor('dejavu_read', (args) => args.uri),
+    presentResult: presentResultFor('dejavu_read'),
     async execute(args, _exec) {
       const c = await client()
       const data = await c.call('tools/call', { name: MCP_TOOLS.read, arguments: { uri: args.uri } })
@@ -299,7 +299,7 @@ export function apply(ctx: Context, config: Config): void {
   })
 
   register({
-    name: 'noc_search',
+    name: 'dejavu_search',
     description:
       'Search memories with semantic + keyword recall (multilingual, CJK-capable). ' +
       'Describe what you are looking for in natural language — semantic search finds ' +
@@ -307,7 +307,7 @@ export function apply(ctx: Context, config: Config): void {
     parameters: {
       query: { type: 'string', required: true, description: 'Concept or keywords to search for' },
       limit: { type: 'number', description: 'Max results (1-50, default 20)' },
-      domain: { type: 'string', description: 'Domain filter (e.g., core, writer); ignored by current cf-noc-mem' },
+      domain: { type: 'string', description: 'Domain filter (e.g., dejavu); ignored by the current DejaVu server' },
     },
     output: {
       schema: { type: 'string' },
@@ -315,8 +315,8 @@ export function apply(ctx: Context, config: Config): void {
       presentationMeta: (args: any) => ({ action: 'search', query: args.query ?? '' }),
     },
     isConcurrencySafe: () => true,
-    presentCall: presentCallFor('noc_search', (args) => args.query),
-    presentResult: presentResultFor('noc_search'),
+    presentCall: presentCallFor('dejavu_search', (args) => args.query),
+    presentResult: presentResultFor('dejavu_search'),
     async execute(args, _exec) {
       const c = await client()
       const arguments_: Record<string, unknown> = { query: args.query }
@@ -331,7 +331,7 @@ export function apply(ctx: Context, config: Config): void {
   })
 
   register({
-    name: 'noc_create',
+    name: 'dejavu_create',
     description:
       'Create a new memory node. Include [Baseline], [Deviation], [Result], [Reusable judgment] for behavior records.',
     parameters: {
@@ -347,8 +347,8 @@ export function apply(ctx: Context, config: Config): void {
       presentationMeta: (args: any) => ({ action: 'create', parent_uri: args.parent_uri ?? '', title: args.title ?? '' }),
     },
     isConcurrencySafe: () => true,
-    presentCall: presentCallFor('noc_create', (args) => args.title ?? args.parent_uri),
-    presentResult: presentResultFor('noc_create'),
+    presentCall: presentCallFor('dejavu_create', (args) => args.title ?? args.parent_uri),
+    presentResult: presentResultFor('dejavu_create'),
     async execute(args, _exec) {
       const c = await client()
       const data = await c.call('tools/call', {
@@ -366,10 +366,10 @@ export function apply(ctx: Context, config: Config): void {
   })
 
   register({
-    name: 'noc_update',
+    name: 'dejavu_update',
     description:
       'Update existing memory. Supports full content replace, old_string/new_string patch, or append. ' +
-      'Must noc_read the URI first. Optional relation marks knowledge evolution: replace|enrich|confirm|challenge.',
+      'Must dejavu_read the URI first. Optional relation marks knowledge evolution: replace|enrich|confirm|challenge.',
     parameters: {
       uri: { type: 'string', required: true, description: 'Memory URI to update' },
       content: { type: 'string', description: 'Full replacement content' },
@@ -391,8 +391,8 @@ export function apply(ctx: Context, config: Config): void {
       presentationMeta: (args: any) => ({ action: 'update', uri: args.uri ?? '' }),
     },
     isConcurrencySafe: () => true,
-    presentCall: presentCallFor('noc_update', (args) => args.uri),
-    presentResult: presentResultFor('noc_update'),
+    presentCall: presentCallFor('dejavu_update', (args) => args.uri),
+    presentResult: presentResultFor('dejavu_update'),
     async execute(args, _exec) {
       const c = await client()
       const arguments_: Record<string, unknown> = { uri: args.uri }
@@ -413,9 +413,9 @@ export function apply(ctx: Context, config: Config): void {
   })
 
   register({
-    name: 'noc_delete',
+    name: 'dejavu_delete',
     description:
-      'Delete a memory by URI (cuts its path). Always noc_read the full node first. ' +
+      'Delete a memory by URI (cuts its path). Always dejavu_read the full node first. ' +
       'If the node has children, the server may return orphans to handle first.',
     parameters: {
       uri: { type: 'string', required: true, description: 'Memory URI to delete' },
@@ -426,8 +426,8 @@ export function apply(ctx: Context, config: Config): void {
       presentationMeta: (args: any) => ({ action: 'delete', uri: args.uri ?? '' }),
     },
     isConcurrencySafe: () => true,
-    presentCall: presentCallFor('noc_delete', (args) => args.uri),
-    presentResult: presentResultFor('noc_delete'),
+    presentCall: presentCallFor('dejavu_delete', (args) => args.uri),
+    presentResult: presentResultFor('dejavu_delete'),
     async execute(args, _exec) {
       const c = await client()
       const data = await c.call('tools/call', {

@@ -17,17 +17,17 @@ function makeCtx() {
 }
 
 describe('dsh-memory smoke', () => {
-  it('registers the 6 noc tools', () => {
+  it('registers the 6 dejavu tools', () => {
     const { ctx, registered } = makeCtx()
     applyMemory(ctx, { mcp_url: 'http://localhost:9999/mcp', mcp_auth: 'x' })
     const names = registered.map((t) => t.name).sort()
     assert.deepEqual(names, [
-      'noc_boot',
-      'noc_create',
-      'noc_delete',
-      'noc_read',
-      'noc_search',
-      'noc_update',
+      'dejavu_boot',
+      'dejavu_create',
+      'dejavu_delete',
+      'dejavu_read',
+      'dejavu_search',
+      'dejavu_update',
     ])
   })
 
