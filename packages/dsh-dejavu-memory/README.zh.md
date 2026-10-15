@@ -11,7 +11,11 @@
 另有 **ChatGPT / Codex 插件** [dejavu-memory](https://github.com/RetiredPhysicist/openai-plugins/tree/main/plugins/dejavu-memory),接同一个记忆服务器,但在聊天客户端里把记忆树画成可交互的知识图谱;本插件只提供工具。
 
 <p align="center">
-  <img src="assets/readme/dejavu-memory-search.webp" width="100%" alt="Codex 中的 DejaVu Memory 插件：记忆树的可交互知识图谱，搜索命中高亮，节点详情面板展开">
+  <img src="assets/readme/dejavu-memory-graph.webp" width="100%" alt="Codex 中的 DejaVu Memory 插件：整棵记忆树的可交互知识图谱，节点按类型着色、按优先级决定大小">
+</p>
+
+<p align="center">
+  <img src="assets/readme/dejavu-memory-inspector.webp" width="100%" alt="选中节点后展开详情面板：记忆 URI、类型与优先级、正文内容，并高亮其子树">
 </p>
 
 [English](README.md) · [中文](README.zh.md)
