@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "cloudflare-browser-run",
+    "description": "Web browsing tools (markdown / screenshot / pdf / crawl) powered by Cloudflare Browser Run, with real headless Chrome, JS rendering, login sessions and WebMCP support."
+  }
+}

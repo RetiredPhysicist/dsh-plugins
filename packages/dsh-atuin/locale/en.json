@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "atuin",
+    "description": "Appends every prompt you type in the web UI to your atuin shell history so it shows up in atuin search and shell integration."
+  }
+}
