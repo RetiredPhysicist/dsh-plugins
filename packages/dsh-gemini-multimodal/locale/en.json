@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "gemini-multimodal",
+    "description": "Multimodal tools (image/audio/video/document understanding, transcription, image generation) via the Gemini API or the local Antigravity CLI."
+  }
+}

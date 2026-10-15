@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "atuin 历史",
+    "description": "把 Web UI 里输入的每条提示词写入 atuin shell 历史，便于在 atuin 搜索与 shell 集成中检索。"
+  }
+}

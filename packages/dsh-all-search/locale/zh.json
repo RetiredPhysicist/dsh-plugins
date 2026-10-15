@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "网页搜索",
+    "description": "基于 AnySearch 的网页搜索提供方，可选 TinyFish 搜索与全浏览器抓取，注册到 ctx.web。"
+  }
+}

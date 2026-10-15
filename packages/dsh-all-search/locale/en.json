@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "all-search",
+    "description": "AnySearch-backed web search provider with optional TinyFish search and full-browser fetch, registered into ctx.web."
+  }
+}

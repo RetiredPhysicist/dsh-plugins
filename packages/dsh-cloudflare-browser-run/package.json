@@ -1,13 +1,15 @@
 {
   "name": "dsh-cloudflare-browser-run",
-  "version": "0.2.7",
-  "description": "DeepSeek Harness plugin: web browsing tools (markdown / screenshot / pdf / crawl) powered by Cloudflare Browser Run \u2014 real headless Chrome with JS rendering, login sessions and WebMCP support.",
+  "version": "0.2.8",
+  "description": "DeepSeek Harness plugin: web browsing tools (markdown / screenshot / pdf / crawl) powered by Cloudflare Browser Run — real headless Chrome with JS rendering, login sessions and WebMCP support.",
   "type": "module",
   "main": "dist/index.js",
   "exports": {
-    ".": "./dist/index.js"
+    ".": "./dist/index.js",
+    "./locale/*.json": "./locale/*.json"
   },
   "files": [
+    "locale",
     "dist",
     "cordis.patch.yml",
     "README.md",

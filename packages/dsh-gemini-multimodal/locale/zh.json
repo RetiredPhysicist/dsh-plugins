@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Gemini 多模态",
+    "description": "多模态工具（图像/音频/视频/文档理解、转写、图像生成），通过 Gemini API 或本地 Antigravity CLI。"
+  }
+}

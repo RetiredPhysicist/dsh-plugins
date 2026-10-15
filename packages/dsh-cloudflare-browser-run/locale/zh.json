@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Cloudflare 浏览器",
+    "description": "由 Cloudflare Browser Run 提供支持的网页工具（markdown / 截图 / PDF / 抓取），真实无头 Chrome，支持 JS 渲染、登录会话与 WebMCP。"
+  }
+}

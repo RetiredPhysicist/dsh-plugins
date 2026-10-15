@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "dejavu-memory",
+    "description": "DejaVu memory client (boot/read/search/create/update/delete) backed by your own DejaVu MCP server."
+  }
+}
