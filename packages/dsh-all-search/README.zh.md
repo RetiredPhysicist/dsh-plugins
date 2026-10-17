@@ -4,11 +4,11 @@
 
 # dsh-all-search
 
-给 DeepSeek Harness 加一个网页搜索 provider,注册进 `ctx.web`。AnySearch 是单 MCP 网关,一把 API key 聚合 exa / tavily / firecrawl / context7 等多家搜索。可选的 **TinyFish** 补充免费新闻与学术搜索,其全浏览器 Fetch 能渲染 JavaScript 重的页面。
+给 DeepSeek Harness 加一个网页搜索 provider,注册进 `ctx.web`。AnySearch 是单 MCP 网关,一把 API key 聚合 exa / tavily / firecrawl / context7 等多家搜索。可选的 **TinyFish** 补充免费新闻与学术搜索,其全浏览器 Fetch 能渲染 JavaScript 重的页面。可选 **DeepSeek** Search/Fetch（`deepseek_api_key`）与聊天共用 Bearer key，在 wrapper 内竞争（不会再注册第二个 search provider）。
 
 配置了 api_key 时查询走 AnySearch 网关。没有 AnySearch key 时，同一个 anysearch provider 仍可用，改走 Firecrawl POST /v1/search，不带 Authorization（keyless）。若设置可选的 firecrawl_api_key，则发送 Authorization: Bearer 并使用你自己的配额。共享出口 IP 的 NAT/CI 会共用这份无 key 日额度。
 
-设置 tinyfish_api_key 后,新闻与学术查询优先走 TinyFish(`domain_type=news` / `research_paper`),失败再回落 AnySearch 或 Firecrawl。设置 tinyfish_fetch: true 会把 TinyFish 注册为 fetch provider,用于全浏览器页面渲染。
+设置 tinyfish_api_key 后,新闻与学术查询优先走 TinyFish(`domain_type=news` / `research_paper`),再 DeepSeek（若配置）,再 AnySearch 或 Firecrawl。设置 `tinyfish_fetch: true` / `deepseek_fetch: true` 会注册对应 fetch provider（默认关——宿主通常自带本地 fetch；Harness 服务端也已内置 DeepSeek Search，本插件路径与 pi-all-search 对齐）。
 
 > 由 [pi-all-search](https://github.com/RetiredPhysicist/pi-plugins/tree/main/packages/pi-all-search) 移植。
 
@@ -40,8 +40,12 @@ provider 以 `anysearch` 注册到 `ctx.web`,内置的 `web_search` 工具会自
 | `firecrawl_api_key` | – | 可选 Firecrawl key（Bearer 配额）。配置 AnySearch 时还启用 Developer Index 分支 |
 | `tinyfish_api_key` | – | 可选 TinyFish key。启用免费新闻/学术搜索与全浏览器 Fetch |
 | `tinyfish_fetch` | – | 把 TinyFish 注册为 fetch provider（默认 `false`,宿主通常自带本地 fetch provider） |
+| `deepseek_api_key` | – | 可选 DeepSeek key。在 `anysearch` wrapper 内启用 DeepSeek Search（`POST /v1/tools/search`） |
+| `deepseek_fetch` | – | 把 DeepSeek 注册为 fetch provider（默认 `false`，原因同 `tinyfish_fetch`） |
 
 没有 AnySearch key 时 provider 仍 available() = true，走 Firecrawl keyless。共享出口 IP 的 NAT/CI 会共用日额度；需要独立配额时设置 firecrawl_api_key。
+
+搜索路由：开发者查询 → Developer Index → TinyFish（新闻/学术）→ DeepSeek → AnySearch → TinyFish → Firecrawl。每把 key 都可选。
 
 ## 隐私
 
@@ -49,6 +53,7 @@ provider 以 `anysearch` 注册到 `ctx.web`,内置的 `web_search` 工具会自
 - 有 api_key 时只向 AnySearch 网关发送查询词和结果数量
 - 没有 api_key 时查询发往 Firecrawl /v1/search
 - 配置 tinyfish_api_key 后,TinyFish 会在其 `/usage` 端点保留每次查询与抓取的 URL,按非私密检索层对待
+- 配置 deepseek_api_key 后,查询发往 DeepSeek `tools/search`（以及可选的 `tools/fetch`）,隐私面与 DeepSeek 聊天 API 相同
 
 ## 开发
 

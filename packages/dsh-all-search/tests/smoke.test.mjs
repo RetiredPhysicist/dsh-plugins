@@ -212,3 +212,40 @@ describe('wrapper routing', () => {
     }
   })
 })
+
+describe('deepseek wrapper routing', () => {
+  it('general query with deepseek_api_key → DeepSeek before AnySearch', async () => {
+    const { ctx, registered } = makeCtx()
+    applySearch(ctx, { api_key: 'anysearch-test-not-real', deepseek_api_key: 'sk-test' })
+    const mock = mockFetch(async (url) => {
+      if (String(url).includes('deepseek.com')) {
+        return new Response(
+          JSON.stringify({ results: [{ title: 'DS', url: 'https://ds.com', summary: 's' }] }),
+          { status: 200 },
+        )
+      }
+      return new Response(JSON.stringify({ result: { content: [{ text: SAMPLE }] } }), { status: 200 })
+    })
+    try {
+      const r = await registered[0].search({ query: 'best coffee in shenzhen' })
+      assert.equal(mock.calls.length, 1)
+      assert.match(mock.calls[0].url, /api\.deepseek\.com\/v1\/tools\/search/)
+      assert.equal(r.sources[0].title, 'DS')
+    } finally {
+      mock.restore()
+    }
+  })
+
+  it('registers DeepSeek fetch when deepseek_fetch is set', () => {
+    const { ctx, fetchRegistered } = makeCtx()
+    applySearch(ctx, { deepseek_api_key: 'sk-test', deepseek_fetch: true })
+    assert.equal(fetchRegistered.length, 1)
+    assert.equal(fetchRegistered[0].id, 'deepseek')
+  })
+
+  it('does not register DeepSeek fetch by default', () => {
+    const { ctx, fetchRegistered } = makeCtx()
+    applySearch(ctx, { deepseek_api_key: 'sk-test' })
+    assert.equal(fetchRegistered.length, 0)
+  })
+})
