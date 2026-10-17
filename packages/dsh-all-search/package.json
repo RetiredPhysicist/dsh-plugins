@@ -1,6 +1,6 @@
 {
   "name": "dsh-all-search",
-  "version": "0.2.16",
+  "version": "0.2.17",
   "description": "DeepSeek Harness plugin: AnySearch-backed web search with optional TinyFish and DeepSeek search/fetch, registered into ctx.web.",
   "type": "module",
   "main": "dist/index.js",
@@ -30,9 +30,9 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@deepseek-ai/cordis": "~4.0.5-alpha.2",
-    "@deepseek-ai/dsh-web": "0.2.1-alpha.4",
-    "@deepseek-ai/schemastery": "~3.18.5-alpha.2"
+    "@deepseek-ai/cordis": "~4.0.5",
+    "@deepseek-ai/dsh-web": "0.2.1-rc.2",
+    "@deepseek-ai/schemastery": "~3.18.5"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
