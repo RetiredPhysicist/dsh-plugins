@@ -6,6 +6,10 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   AnysearchProvider,
+  DeepSeekFetchProvider,
+  DeepSeekSearchProvider,
+  DEEPSEEK_FETCH_URL,
+  DEEPSEEK_SEARCH_URL,
   FirecrawlDevProvider,
   FirecrawlSearchProvider,
   FIRECRAWL_SEARCH_URL,
@@ -315,6 +319,76 @@ describe('Firecrawl keyless live (optional)', () => {
       const msg = String(err)
       if (/HTTP \d+|fetch|network|ECONN|ETIMEDOUT|ENOTFOUND/i.test(msg)) return
       throw err
+    }
+  })
+})
+
+describe('DeepSeekSearchProvider', () => {
+  it('posts Bearer auth and prefers summary over snippet', async () => {
+    const orig = globalThis.fetch
+    let captured
+    globalThis.fetch = async (url, init) => {
+      captured = { url: String(url), init }
+      return new Response(
+        JSON.stringify({
+          results: [
+            {
+              title: 'DeepSeek V4',
+              url: 'https://example.com/v4',
+              summary: 'long summary',
+              snippet: 'short',
+              date: '2026-06-01T00:00:00+00:00',
+              rerank_score: 2.4,
+            },
+          ],
+        }),
+        { status: 200 },
+      )
+    }
+    try {
+      const p = new DeepSeekSearchProvider('sk-test')
+      assert.equal(p.available(), true)
+      const r = await p.search({ query: 'DeepSeek V4', maxResults: 5 })
+      assert.equal(captured.url, DEEPSEEK_SEARCH_URL)
+      assert.equal(captured.init.headers.Authorization, 'Bearer sk-test')
+      const body = JSON.parse(captured.init.body)
+      assert.equal(body.need_content, false)
+      assert.equal(body.count, 5)
+      assert.equal(r.sources[0].snippet, 'long summary')
+      assert.equal(r.sources[0].publishedAt, '2026-06-01T00:00:00+00:00')
+    } finally {
+      globalThis.fetch = orig
+    }
+  })
+
+  it('throws on HTTP 401', async () => {
+    const orig = globalThis.fetch
+    globalThis.fetch = async () => new Response('{}', { status: 401 })
+    try {
+      await assert.rejects(() => new DeepSeekSearchProvider('bad').search({ query: 'x' }), /HTTP 401/)
+    } finally {
+      globalThis.fetch = orig
+    }
+  })
+})
+
+describe('DeepSeekFetchProvider', () => {
+  it('posts url and returns markdown body', async () => {
+    const orig = globalThis.fetch
+    let captured
+    globalThis.fetch = async (url, init) => {
+      captured = { url: String(url), init }
+      return new Response(JSON.stringify({ title: 'Example', content: 'Body' }), { status: 200 })
+    }
+    try {
+      const r = await new DeepSeekFetchProvider('sk-test').fetch({ url: 'https://example.com' })
+      assert.equal(captured.url, DEEPSEEK_FETCH_URL)
+      assert.equal(JSON.parse(captured.init.body).url, 'https://example.com')
+      assert.equal(r.statusCode, 200)
+      assert.match(r.body.content, /Example/)
+      assert.match(r.body.content, /Body/)
+    } finally {
+      globalThis.fetch = orig
     }
   })
 })

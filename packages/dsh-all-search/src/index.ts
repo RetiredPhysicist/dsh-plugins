@@ -1,20 +1,24 @@
 // dsh-all-search — DeepSeek Harness (Cordis) plugin.
 //
-// Registers one WebSearchProvider (id anysearch) and, when a TinyFish key is
-// configured, one WebFetchProvider (id tinyfish) with ctx.web. AnySearch is a
-// MCP gateway that aggregates exa / tavily / firecrawl / context7 behind one
-// API key. When that key is set, queries stay on the gateway (developer-intent
-// queries may try the Firecrawl Developer Index first). When the AnySearch key
-// is absent, the same wrapper stays available and searches via Firecrawl
-// POST /v1/search — no Authorization header unless firecrawl_api_key is set
-// (then Bearer, own quota).
+// Registers one WebSearchProvider (id anysearch) and optional WebFetchProviders
+// with ctx.web. AnySearch is a MCP gateway that aggregates exa / tavily /
+// firecrawl / context7 behind one API key. When that key is set, queries stay
+// on the gateway (developer-intent queries may try the Firecrawl Developer
+// Index first). When the AnySearch key is absent, the same wrapper stays
+// available and searches via Firecrawl POST /v1/search — no Authorization
+// header unless firecrawl_api_key is set (then Bearer, own quota).
+//
+// DeepSeek Search/Fetch (DEEPSEEK_API_KEY / deepseek_api_key) compete inside
+// the same wrapper — never as a second registered search provider, because
+// dsh-web errors on WEB_PROVIDER_AMBIGUOUS. Harness already exposes DeepSeek
+// search server-side; this path keeps all-search consistent with pi-all-search.
 //
 // The dsh-web seam errors on multiple usable providers
 // (WEB_PROVIDER_AMBIGUOUS) unless one is configured explicitly, so this plugin
-// registers exactly one provider per capability. Search stays on the anysearch
-// wrapper; TinyFish competes inside it rather than registering a second search
-// provider. Fetch registers only when a TinyFish key exists, because the host
-// already supplies a local fetch provider.
+// registers exactly one search provider (the anysearch wrapper). TinyFish and
+// DeepSeek compete inside it. Fetch registers only when explicitly enabled
+// (tinyfish_fetch / deepseek_fetch), because the host already supplies a local
+// fetch provider.
 //
 // Privacy: API keys live in the plugin config only; they are never logged.
 
@@ -49,6 +53,14 @@ export interface Config {
    * or when `fetchProvider` is pinned to `tinyfish`.
    */
   tinyfish_fetch?: boolean
+  /** DeepSeek API key — enables DeepSeek Search inside the anysearch wrapper. */
+  deepseek_api_key?: string
+  /**
+   * Register DeepSeek as a fetch provider. Off by default for the same reason
+   * as `tinyfish_fetch` — the host usually already supplies a local fetch.
+   * Enable when you want DeepSeek tools/fetch (same key as search).
+   */
+  deepseek_fetch?: boolean
 }
 
 export const Config: z<Config> = z.object({
@@ -57,12 +69,16 @@ export const Config: z<Config> = z.object({
   firecrawl_api_key: z.string().description('Firecrawl API key (optional) — Bearer for Firecrawl quota; also enables Developer Index when AnySearch is configured'),
   tinyfish_api_key: z.string().description('TinyFish API key (optional) — enables TinyFish search and full-browser fetch'),
   tinyfish_fetch: z.boolean().description('Register TinyFish as the fetch provider (default false — the host usually supplies a local fetch provider)'),
+  deepseek_api_key: z.string().description('DeepSeek API key (optional) — enables DeepSeek Search inside the anysearch wrapper'),
+  deepseek_fetch: z.boolean().description('Register DeepSeek as a fetch provider (default false — the host usually supplies a local fetch provider)'),
 })
 
 const DEFAULT_BASE_URL = 'https://api.anysearch.com/mcp'
 export const FIRECRAWL_SEARCH_URL = 'https://api.firecrawl.dev/v1/search'
 export const TINYFISH_SEARCH_URL = 'https://api.search.tinyfish.ai'
 export const TINYFISH_FETCH_URL = 'https://api.fetch.tinyfish.ai'
+export const DEEPSEEK_SEARCH_URL = 'https://api.deepseek.com/v1/tools/search'
+export const DEEPSEEK_FETCH_URL = 'https://api.deepseek.com/v1/tools/fetch'
 const DEVELOPER_QUERY_RE =
   /\b(repo|repos|repository|repositories|github|issue|issues|pull request|pull requests|commit|commits|branch|merge|openapi|readme|skill|skills|library|framework)\b/i
 const NEWS_QUERY_RE =
@@ -285,18 +301,119 @@ export class TinyFishFetchProvider implements WebFetchProvider {
   }
 }
 
+
+/** DeepSeek Search — self-hosted search API (same Bearer key as chat). */
+export class DeepSeekSearchProvider implements WebSearchProvider {
+  readonly id = 'deepseek'
+  constructor(private readonly apiKey: string) {}
+
+  available(): boolean {
+    return Boolean(this.apiKey)
+  }
+
+  async search(request: WebSearchRequest, signal?: AbortSignal): Promise<WebSearchResult> {
+    const count = Math.min(Math.max(request.maxResults ?? 5, 1), 50)
+    const resp = await fetch(DEEPSEEK_SEARCH_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.apiKey}`,
+      },
+      signal,
+      body: JSON.stringify({ query: request.query, count, need_content: false }),
+    })
+    if (!resp.ok) throw new Error(`DeepSeek search HTTP ${resp.status}`)
+    const data = (await resp.json()) as {
+      results?: Array<{
+        title?: string
+        url?: string
+        snippet?: string
+        summary?: string
+        date?: string | null
+        rerank_score?: number
+      }>
+    }
+    const sources: WebSearchSource[] = (data.results ?? []).map((r) => ({
+      title: r.title ?? '',
+      url: r.url ?? '',
+      snippet: (r.summary || r.snippet || '').trim(),
+      ...(r.date ? { publishedAt: String(r.date) } : {}),
+    }))
+    const truncated = request.maxResults !== undefined && sources.length > request.maxResults
+    return {
+      sources: truncated ? sources.slice(0, request.maxResults) : sources,
+      truncated,
+    }
+  }
+}
+
+/**
+ * DeepSeek fetch — single-URL markdown extraction via tools/fetch.
+ * Opt-in via `deepseek_fetch` so the host local fetch stays the default.
+ */
+export class DeepSeekFetchProvider implements WebFetchProvider {
+  readonly id = 'deepseek'
+  constructor(private readonly apiKey: string) {}
+
+  available(): boolean {
+    return Boolean(this.apiKey)
+  }
+
+  async fetch(request: WebFetchRequest, signal?: AbortSignal): Promise<WebFetchResult> {
+    const resp = await fetch(DEEPSEEK_FETCH_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.apiKey}`,
+      },
+      signal,
+      body: JSON.stringify({ url: request.url }),
+    })
+    if (!resp.ok) {
+      return {
+        url: request.url,
+        statusCode: resp.status,
+        body: { kind: 'text', content: `DeepSeek fetch HTTP ${resp.status}` },
+        truncated: false,
+      }
+    }
+    const data = (await resp.json()) as { title?: string; content?: string }
+    const content = (data.content ?? '').trim()
+    if (!content) {
+      return {
+        url: request.url,
+        statusCode: 404,
+        body: { kind: 'text', content: 'DeepSeek fetch returned no content' },
+        truncated: false,
+      }
+    }
+    const body = data.title ? `# ${data.title}\n\n${content}` : content
+    return {
+      url: request.url,
+      statusCode: 200,
+      body: { kind: 'text', content: body },
+      truncated: false,
+    }
+  }
+}
+
 export function apply(ctx: Context, config: Config): void {
   const anysearch = new AnysearchProvider(config.api_key ?? '', config.base_url ?? DEFAULT_BASE_URL)
   const firecrawl = new FirecrawlSearchProvider(config.firecrawl_api_key)
   const devIndex = config.firecrawl_api_key ? new FirecrawlDevProvider(config.firecrawl_api_key) : null
   const tinyfish = config.tinyfish_api_key ? new TinyFishSearchProvider(config.tinyfish_api_key) : null
+  const deepseek = config.deepseek_api_key ? new DeepSeekSearchProvider(config.deepseek_api_key) : null
 
   // Single provider to avoid dsh-web's WEB_PROVIDER_AMBIGUOUS on multiple
   // usable providers. Priority: Dev Index (developer queries) → TinyFish
-  // (news/academic) → AnySearch gateway → TinyFish → Firecrawl /v1/search.
+  // (news/academic) → DeepSeek → AnySearch gateway → TinyFish → Firecrawl.
   const wrapper: WebSearchProvider = {
     id: 'anysearch',
-    available: () => Boolean(config.api_key) || Boolean(config.tinyfish_api_key) || firecrawl.available(),
+    available: () =>
+      Boolean(config.api_key) ||
+      Boolean(config.tinyfish_api_key) ||
+      Boolean(config.deepseek_api_key) ||
+      firecrawl.available(),
     async search(request, signal) {
       if (devIndex && isDeveloperQuery(request.query)) {
         try {
@@ -310,6 +427,14 @@ export function apply(ctx: Context, config: Config): void {
         try {
           const tf = await tinyfish.search(request, signal)
           if (tf.sources.length > 0) return tf
+        } catch {
+          // fall through to the next provider
+        }
+      }
+      if (deepseek) {
+        try {
+          const ds = await deepseek.search(request, signal)
+          if (ds.sources.length > 0) return ds
         } catch {
           // fall through to the next provider
         }
@@ -332,5 +457,8 @@ export function apply(ctx: Context, config: Config): void {
 
   if (config.tinyfish_fetch && config.tinyfish_api_key && typeof ctx.web.registerFetchProvider === 'function') {
     ctx.web.registerFetchProvider(new TinyFishFetchProvider(config.tinyfish_api_key))
+  }
+  if (config.deepseek_fetch && config.deepseek_api_key && typeof ctx.web.registerFetchProvider === 'function') {
+    ctx.web.registerFetchProvider(new DeepSeekFetchProvider(config.deepseek_api_key))
   }
 }
