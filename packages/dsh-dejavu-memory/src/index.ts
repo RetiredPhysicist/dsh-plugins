@@ -1,7 +1,7 @@
 // dsh-memory — DeepSeek Harness (Cordis) plugin.
 //
-// Noc Memory client: automated long-term memory for the agent,
-// backed by YOUR OWN Noc MCP server (mcp_url). Ported from
+// DejaVu Memory client: automated long-term memory for the agent,
+// backed by YOUR OWN DejaVu MCP server (mcp_url). Ported from
 // pi-dejavu-memory — same MCP protocol, same boot protocol, same tools.
 //
 // Tools: dejavu_boot (session-start memory load), dejavu_read,
@@ -18,7 +18,7 @@ export const name = 'dejavu-memory'
 export const inject = ['tools', 'systemPrompt']
 
 export interface Config {
-  /** Noc MCP server URL, e.g. http://localhost:PORT/mcp. Optional at load
+  /** DejaVu MCP server URL, e.g. http://localhost:PORT/mcp. Optional at load
    *  time — a missing server surfaces as a setup hint on tool calls so the
    *  plugin still loads in a bare profile. */
   mcp_url?: string
@@ -31,8 +31,10 @@ export interface Config {
   protocol_version?: string
 }
 
+const PLUGIN_VERSION = '0.5.5'
+
 export const Config: z<Config> = z.object({
-  mcp_url: z.string().description('Noc MCP server URL, e.g. http://localhost:PORT/mcp'),
+  mcp_url: z.string().description('DejaVu MCP server URL, e.g. http://localhost:PORT/mcp'),
   mcp_auth: z.string().description('MCP auth token (Authorization header value, e.g. "Bearer xxx")'),
   mcp_headers: z.dict(z.string()).description('Extra headers merged into every MCP request (e.g. Cloudflare Access service token)'),
   protocol_version: z.string().description('MCP protocol version (default 2024-11-05)'),
@@ -115,7 +117,7 @@ function isMissingSession(parsed: any): boolean {
   return code === -32600 || message.includes('session')
 }
 
-class NocClient {
+class DejaVuClient {
   private sessionId: string | null = null
   private initPromise: Promise<string | null> | null = null
   // Probe once: MCP 2.0 servers answer without a session; legacy servers
@@ -155,7 +157,7 @@ class NocClient {
       const resp = await this.fetchRaw('initialize', {
         protocolVersion: this.protocolVersion,
         capabilities: {},
-        clientInfo: { name: 'dsh-memory', version: '0.1.0' },
+        clientInfo: { name: 'dsh-dejavu-memory', version: PLUGIN_VERSION },
       })
       if (!resp.ok) return null
       return resp.headers.get('mcp-session-id')
@@ -201,21 +203,23 @@ export function apply(ctx: Context, config: Config): void {
     name: 'tool:dejavu-memory',
     order: 2960,
     text:
-      'You have long-term memory via the Noc MCP server. At the start of ' +
+      'You have long-term memory via the DejaVu MCP server. At the start of ' +
       'substantial work call dejavu_boot to load system://boot, system://recent/5, ' +
       'system://triggers, and best-effort system://briefing; then ' +
       'read system://focus to resume active working trees (recent is a briefing ' +
-      'subset — no need to re-read it after boot); use dejavu_search before ' +
-      'answering from memory — describe what you need in natural language, not ' +
+      'subset — no need to re-read it after boot). Use dejavu_search before ' +
+      'answering from memory or when the task topic changes; describe what you need in natural language, not ' +
       'just keywords (semantic recall finds memories with no shared words); ' +
-      'persist valuable outcomes with dejavu_create; revise with dejavu_update; remove ' +
-      'dead nodes with dejavu_delete. ' +
+      'read before writing, persist durable outcomes with dejavu_create, ' +
+      'revise with dejavu_update, and remove dead nodes with dejavu_delete. ' +
+      'Prefer dejavu_update when the topic already exists because URI is identity. ' +
       'Periodically (after many new memories or when you repeat a mistake) ' +
       'run a memory audit: dejavu_read system://diagnostic/dejavu, then fix what it ' +
       'flags — never-reaccessed high-priority memories (disclosure/placement), ' +
       'stale or cold candidates (dejavu_delete if dead, demote if niche), crowded ' +
-      'parents (regroup), contradictions (merge via dejavu_update). Always ' +
-      'dejavu_read a node in full before changing it.',
+      'parents (regroup), contradictions (merge via dejavu_update). Never keep two conflicting versions. ' +
+      'Always dejavu_read a node in full before changing or deleting it. ' +
+      'The interactive memory graph belongs to the OpenAI/Codex plugin, not dsh.',
   })
 
   const resolveAuth = async (): Promise<string> => config.mcp_auth ?? ''
@@ -223,14 +227,14 @@ export function apply(ctx: Context, config: Config): void {
   // One client per plugin instance: the MCP session (initialize handshake +
   // session id) is reused across tool calls instead of re-handshaking on every
   // call.
-  let cachedClient: Promise<NocClient> | null = null
-  const client = (): Promise<NocClient> => {
+  let cachedClient: Promise<DejaVuClient> | null = null
+  const client = (): Promise<DejaVuClient> => {
     if (!cachedClient) {
       cachedClient = (async () => {
         if (!config.mcp_url) {
-          throw new Error('Noc MCP server not configured — set mcp_url in the plugin config (e.g. http://localhost:PORT/mcp)')
+          throw new Error('DejaVu MCP server not configured — set mcp_url in the plugin config (e.g. http://localhost:PORT/mcp)')
         }
-        return new NocClient(config.mcp_url, await resolveAuth(), config.protocol_version ?? '2024-11-05', config.mcp_headers ?? {})
+        return new DejaVuClient(config.mcp_url, await resolveAuth(), config.protocol_version ?? '2024-11-05', config.mcp_headers ?? {})
       })()
     }
     return cachedClient

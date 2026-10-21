@@ -1,4 +1,4 @@
-// Cordis runtime smoke test: registers the Nocturne tools.
+// Cordis runtime smoke test: registers the DejaVu tools.
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { Context } from '@deepseek-ai/cordis'

@@ -8,14 +8,14 @@
 
 > 由 [pi-dejavu-memory](https://github.com/RetiredPhysicist/pi-plugins/tree/main/packages/pi-dejavu-memory) 移植,协议与工具名完全一致。
 
-另有 **ChatGPT / Codex 插件** [dejavu-memory](https://github.com/RetiredPhysicist/openai-plugins/tree/main/plugins/dejavu-memory),接同一个记忆服务器,但在聊天客户端里把记忆树画成可交互的知识图谱;本插件只提供工具。
+可交互的记忆图只由 [OpenAI/Codex 插件](https://github.com/RetiredPhysicist/openai-plugins/tree/main/plugins/dejavu-memory) 打开。dsh 通过同一服务的工具接入,没有图界面,也不需要让最终用户手工配 MCP。
 
 <p align="center">
-  <img src="assets/readme/dejavu-memory-graph.webp" width="100%" alt="Codex 中的 DejaVu Memory 插件：整棵记忆树的可交互知识图谱，节点按类型着色、按优先级决定大小">
+  <img src="assets/readme/dejavu-memory-graph.webp" width="100%" alt="OpenAI/Codex 的 DejaVu Memory 插件：整棵记忆树的可交互图，节点按类型着色、按优先级决定大小">
 </p>
 
 <p align="center">
-  <img src="assets/readme/dejavu-memory-inspector.webp" width="100%" alt="选中节点后展开详情面板：记忆 URI、类型与优先级、正文内容，并高亮其子树">
+  <img src="assets/readme/dejavu-memory-inspector.webp" width="100%" alt="OpenAI/Codex 的 DejaVu Memory 插件选中节点后的详情面板：记忆 URI、类型、优先级、正文和子树">
 </p>
 
 [English](README.md) · [中文](README.zh.md)
@@ -37,7 +37,7 @@
 dsh plugin --profile web add dsh-dejavu-memory
 ```
 
-需要你能连到自己的 DejaVu（DejaVu）服务器——几分钟部署到 Cloudflare:[DejaVu](https://github.com/RealAlexandreAI/DejaVu)。
+需要你能连到自己的 DejaVu MCP 服务器。
 
 ```yaml
 - id: dejavu
@@ -64,11 +64,9 @@ dsh plugin --profile web add dsh-dejavu-memory
 | `mcp_url` | 是 | 你的 DejaVu MCP 端点(Streamable HTTP) |
 | `mcp_auth` | 否 | 遗留字段；优先用 `mcp_headers` 传 Cloudflare Access service token |
 
-> **从 dsh-noc-memory(≤0.1.x)升级:** 已改名为 `dsh-dejavu-memory`,工具名 `noc_*` → `dejavu_*`。删除旧插件后重新添加新包;更新提示词里所有旧工具引用。
+## 工具命名
 
-## 为什么叫 dejavu_*(不叫 noc_*)?
-
-部分模型会先探测 `read_mcp_resource` 再调用记忆工具,浪费一次往返([上游 issue #32](https://github.com/Dataojitori/nocturne_memory/issues/32))。工具列表与 boot 协议提示词里显式的 `dejavu_boot` / `dejavu_read` 命名,能把模型直接引导到正确工具——无需 resource 兼容层。
+`dejavu_boot` / `dejavu_read` 前缀让记忆工具在工具列表和 boot 协议里含义明确,模型会直接调用,无需先探测通用 resource。
 
 ## License
 
@@ -76,7 +74,5 @@ MIT
 
 ## 相关
 
-- [DejaVu](https://github.com/RealAlexandreAI/DejaVu) — 本插件连接的 Cloudflare MCP 记忆服务器
-- [dejavu-memory(ChatGPT / Codex 版)](https://github.com/RetiredPhysicist/openai-plugins/tree/main/plugins/dejavu-memory) — 同一个记忆服务器,另有可交互的知识图谱
+- [dejavu-memory(ChatGPT / Codex 版)](https://github.com/RetiredPhysicist/openai-plugins/tree/main/plugins/dejavu-memory) — 同一个记忆服务器,另有可交互的图界面
 - [pi-dejavu-memory](https://github.com/RetiredPhysicist/pi-plugins/tree/main/packages/pi-dejavu-memory) — 面向 Pi 的同一套记忆工具
-- [DejaVu_memory](https://github.com/Dataojitori/DejaVu_memory) — 上游项目

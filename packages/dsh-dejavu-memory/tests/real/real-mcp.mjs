@@ -1,5 +1,5 @@
 // Real integration: dsh-dejavu-memory — mount into cordis and run real
-// Nocturne MCP calls (read a memory via boot URIs). Config comes from the pi
+// DejaVu MCP calls (read a memory via boot URIs). Config comes from the dsh
 // extension's config file — no env vars.
 import { readFileSync } from 'node:fs'
 import { homedir } from 'node:os'

@@ -1,6 +1,6 @@
 {
   "name": "dsh-dejavu-memory",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "DeepSeek Harness plugin: DejaVu memory client — automated long-term memory (boot/read/search/create/update/delete) backed by your own DejaVu MCP server.",
   "type": "module",
   "main": "dist/index.js",

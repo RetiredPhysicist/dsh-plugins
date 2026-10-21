@@ -10,14 +10,14 @@ DeepSeek Harness 以文本为主。这些插件补上宿主未自带的能力：
 
 | 包 | 版本 | npm | 补充的能力 |
 | --- | --- | --- | --- |
-| [`dsh-all-search`](packages/dsh-all-search) | 0.2.14 | [`dsh-all-search`](https://www.npmjs.com/package/dsh-all-search) | 在 `ctx.web` 上注册搜索提供方 `anysearch`。可走 AnySearch，也可选 Firecrawl 和 TinyFish。 |
-| [`dsh-atuin`](packages/dsh-atuin) | 0.1.6 | [`dsh-atuin`](https://www.npmjs.com/package/dsh-atuin) | 把每条手输提示追加到本机 [atuin](https://github.com/atuinsh/atuin) 历史。 |
-| [`dsh-cloudflare-browser-run`](packages/dsh-cloudflare-browser-run) | 0.2.8 | [`dsh-cloudflare-browser-run`](https://www.npmjs.com/package/dsh-cloudflare-browser-run) | 工具 `browse`、`screenshot`、`pdf`、`crawl`、`crawl_status`，走 Cloudflare Browser Run。 |
-| [`dsh-codebuddy-sdk`](packages/dsh-codebuddy-sdk) | 0.1.1 | [`dsh-codebuddy-sdk`](https://www.npmjs.com/package/dsh-codebuddy-sdk) | 在 `ctx.llm` 上注册本机 CodeBuddy CLI 的 LLM 适配器。 |
-| [`dsh-dejavu-memory`](packages/dsh-dejavu-memory) | 0.5.2 | [`dsh-dejavu-memory`](https://www.npmjs.com/package/dsh-dejavu-memory) | 工具 `dejavu_boot`、`dejavu_read`、`dejavu_search`、`dejavu_create`、`dejavu_update`、`dejavu_delete`。 |
-| [`dsh-gemini-multimodal`](packages/dsh-gemini-multimodal) | 0.1.6 | [`dsh-gemini-multimodal`](https://www.npmjs.com/package/dsh-gemini-multimodal) | 工具 `media_understand`、`media_transcribe`、`image_generate`、`read_document`。 |
+| [`dsh-all-search`](packages/dsh-all-search) | 0.2.17 | [`dsh-all-search`](https://www.npmjs.com/package/dsh-all-search) | 在 `ctx.web` 上注册搜索提供方 `anysearch`。可走 AnySearch，也可选 Firecrawl 和 TinyFish。 |
+| [`dsh-atuin`](packages/dsh-atuin) | 0.1.8 | [`dsh-atuin`](https://www.npmjs.com/package/dsh-atuin) | 把每条手输提示追加到本机 [atuin](https://github.com/atuinsh/atuin) 历史。 |
+| [`dsh-cloudflare-browser-run`](packages/dsh-cloudflare-browser-run) | 0.2.10 | [`dsh-cloudflare-browser-run`](https://www.npmjs.com/package/dsh-cloudflare-browser-run) | 工具 `browse`、`screenshot`、`pdf`、`crawl`、`crawl_status`，走 Cloudflare Browser Run。 |
+| [`dsh-codebuddy-sdk`](packages/dsh-codebuddy-sdk) | 0.1.3 | [`dsh-codebuddy-sdk`](https://www.npmjs.com/package/dsh-codebuddy-sdk) | 在 `ctx.llm` 上注册本机 CodeBuddy CLI 的 LLM 适配器。 |
+| [`dsh-dejavu-memory`](packages/dsh-dejavu-memory) | 0.5.5 | [`dsh-dejavu-memory`](https://www.npmjs.com/package/dsh-dejavu-memory) | 工具 `dejavu_boot`、`dejavu_read`、`dejavu_search`、`dejavu_create`、`dejavu_update`、`dejavu_delete`。 |
+| [`dsh-gemini-multimodal`](packages/dsh-gemini-multimodal) | 0.1.8 | [`dsh-gemini-multimodal`](https://www.npmjs.com/package/dsh-gemini-multimodal) | 工具 `media_understand`、`media_transcribe`、`image_generate`、`read_document`。 |
 
-版本与本仓库 `packages/<name>/package.json` 一致。每个包都有英文和中文 README，例如 [English](packages/dsh-all-search/README.md) 和 [中文](packages/dsh-all-search/README.zh.md)（其余包路径相同）。
+版本与本仓库 `packages/<name>/package.json` 一致。每个包都有英文和中文 README，例如 `packages/dsh-all-search/README.md` 与 `README.zh.md`。
 
 每个包都是 MIT。根目录没有 `LICENSE`；授权以你安装的那个包里的文件为准。
 
@@ -101,11 +101,11 @@ script/release-tag.sh <pkg>
 git push origin <pkg>-v<version>
 ```
 
-`script/release-tag.sh dsh-all-search` 读取 `packages/dsh-all-search/package.json`。文件里是 `0.2.14` 时，它创建 `dsh-all-search-v0.2.14`。脚本不会改版本号。
+`script/release-tag.sh dsh-all-search` 读取 `packages/dsh-all-search/package.json`。文件里是 `0.2.17` 时，它创建 `dsh-all-search-v0.2.17`。脚本不会改版本号。
 
 `.github/workflows/publish.yml` 匹配 `dsh-*-v*`，核对标签版本与 `package.json`，构建该包，再用 OIDC 执行 `npm publish --access public`。仓库里不存 npm token。
 
-每个包里还留着一份嵌套的 `.github/workflows/publish.yml`，匹配裸 `v*` 标签。这是各包还是独立仓库时留下的。`dsh-<pkg>-v<version>` 这种标签不会触发它们。在这个 monorepo 里发布，走根目录的 workflow。
+在这个 monorepo 里发布，走根目录的 workflow。包目录里没有独立的 GitHub workflow 文件。
 
 ## 许可证
 

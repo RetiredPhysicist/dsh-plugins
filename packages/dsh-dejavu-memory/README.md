@@ -4,21 +4,18 @@
 
 # dsh-dejavu-memory
 
-> **Renamed:** former npm/GitHub package `dsh-noc-memory` → **`dsh-dejavu-memory`**. Prefer this package; deprecate the old name when publishing.
-
-
 Connects DeepSeek Harness to **DejaVu**: session-start boot + daily briefing, plus memory read / search / create / update / delete, backed by your own DejaVu MCP server on Cloudflare.
 
 > Port of [pi-dejavu-memory](https://github.com/RetiredPhysicist/pi-plugins/tree/main/packages/pi-dejavu-memory) — same protocol, same tool names.
 
-There is also a **ChatGPT and Codex plugin**, [dejavu-memory](https://github.com/RetiredPhysicist/openai-plugins/tree/main/plugins/dejavu-memory) — the same memory server, but with an interactive knowledge graph of the tree inside the chat client. This plugin stays tool-only.
+The [OpenAI/Codex plugin](https://github.com/RetiredPhysicist/openai-plugins/tree/main/plugins/dejavu-memory) is the only client that opens the interactive memory graph. dsh uses the same server through tools only, with no graph UI and no user-facing MCP setup.
 
 <p align="center">
-  <img src="assets/readme/dejavu-memory-graph.webp" width="100%" alt="The DejaVu Memory plugin in Codex: the whole memory tree drawn as an interactive graph, with type colours and priority-sized nodes">
+  <img src="assets/readme/dejavu-memory-graph.webp" width="100%" alt="The OpenAI/Codex DejaVu Memory plugin showing the memory tree as an interactive graph">
 </p>
 
 <p align="center">
-  <img src="assets/readme/dejavu-memory-inspector.webp" width="100%" alt="Selecting a node opens the inspector: the memory URI, its type and priority, and the body text, with its subtree highlighted">
+  <img src="assets/readme/dejavu-memory-inspector.webp" width="100%" alt="The OpenAI/Codex DejaVu Memory plugin inspector showing a node, its metadata, body text, and subtree">
 </p>
 
 [English](README.md) · [中文](README.zh.md)
@@ -40,7 +37,7 @@ There is also a **ChatGPT and Codex plugin**, [dejavu-memory](https://github.com
 dsh plugin --profile web add dsh-dejavu-memory
 ```
 
-Requires your own DejaVu server — deploy it to Cloudflare in minutes: [DejaVu](https://github.com/RealAlexandreAI/DejaVu).
+Requires your own DejaVu MCP server on Cloudflare.
 
 ```yaml
 - id: dejavu
@@ -68,11 +65,9 @@ For a server behind Cloudflare Access (e.g. dejavu.example.com), use the **servi
 | `mcp_auth` | no | legacy; prefer `mcp_headers` for Cloudflare Access service token |
 | `mcp_headers` | no | extra headers merged into every MCP request (e.g. Cloudflare Access service token) |
 
-> **Upgrading from dsh-noc-memory:** package renamed to `dsh-dejavu-memory`. Remove the old plugin and re-add; point config `id` at `dejavu`.
+## Tool naming
 
-## Why dejavu_* (not noc_*)?
-
-Some agents probe `read_mcp_resource` before reaching for a memory tool, wasting a round trip ([upstream issue #32](https://github.com/Dataojitori/nocturne_memory/issues/32)). Explicit `dejavu_boot` / `dejavu_read` naming in the tool list and boot-protocol prompt steers models straight to the right tool — no resource shim required.
+The `dejavu_boot` / `dejavu_read` prefixes make the memory tools explicit in the tool list and in the boot protocol, so agents call them directly instead of probing for a generic resource first.
 
 ## License
 
@@ -80,7 +75,5 @@ MIT
 
 ## Related
 
-- [DejaVu](https://github.com/RealAlexandreAI/DejaVu) — the Cloudflare MCP memory server this plugin talks to
-- [dejavu-memory for ChatGPT and Codex](https://github.com/RetiredPhysicist/openai-plugins/tree/main/plugins/dejavu-memory) — same memory server, with an interactive knowledge graph
+- [dejavu-memory for ChatGPT and Codex](https://github.com/RetiredPhysicist/openai-plugins/tree/main/plugins/dejavu-memory) — same memory server, with the interactive graph UI
 - [pi-dejavu-memory](https://github.com/RetiredPhysicist/pi-plugins/tree/main/packages/pi-dejavu-memory) — same memory tools for Pi
-- [DejaVu_memory](https://github.com/Dataojitori/DejaVu_memory) — upstream project

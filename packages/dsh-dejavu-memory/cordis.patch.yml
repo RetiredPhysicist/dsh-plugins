@@ -6,7 +6,9 @@
 #     name: 'dsh-dejavu-memory'
 #     config:
 #       mcp_url: http://localhost:PORT/mcp
-#       mcp_auth: Bearer <your token>
+#       mcp_headers:
+#         CF-Access-Client-Id: <client id>
+#         CF-Access-Client-Secret: <client secret>
 - insert:
     - id: dejavu
       name: 'dsh-dejavu-memory'
