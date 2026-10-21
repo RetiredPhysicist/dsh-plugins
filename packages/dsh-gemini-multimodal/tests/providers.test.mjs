@@ -6,6 +6,19 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { agyArgs, guessMimeType, runProvider } from '../src/providers.ts'
 
+// `runProvider` spawns `agy` from PATH, so a machine that has agy installed
+// would run the real CLI here and block until the 150s kill timer. Clearing
+// PATH makes the ENOENT branch deterministic on every machine.
+async function withoutPath(fn) {
+  const saved = process.env.PATH
+  process.env.PATH = ''
+  try {
+    return await fn()
+  } finally {
+    process.env.PATH = saved
+  }
+}
+
 describe('guessMimeType', () => {
   it('maps common extensions', () => {
     assert.equal(guessMimeType('a.png'), 'image/png')
@@ -42,23 +55,25 @@ describe('runProvider — gemini_api without key', () => {
 })
 
 describe('runProvider — default provider (no config)', () => {
-  it('defaults to antigravity_cli', async () => {
-    const r = await runProvider({}, 'understand', { source: '/tmp/x.png', question: 'q' })
-    assert.equal(typeof r.ok, 'boolean')
+  it('falls back to antigravity_cli rather than demanding an api_key', async () => {
+    const r = await withoutPath(() =>
+      runProvider({}, 'understand', { source: '/tmp/x.png', question: 'q' }),
+    )
+    assert.equal(r.ok, false)
+    assert.match(r.error ?? '', /agy not found on PATH/)
   })
 })
 
 describe('runProvider — antigravity_cli without agy on PATH', () => {
   it('returns a friendly error when agy is missing', async () => {
-    // PATH is unchanged here; if agy exists locally the test still passes
-    // because spawn failure is handled. If agy runs, output may be real —
-    // acceptable, but we assert on the result shape only.
-    const r = await runProvider(
-      { provider: 'antigravity_cli', skipPermissions: false },
-      'understand',
-      { source: '/tmp/nonexistent-xyz.png', question: 'q' },
+    const r = await withoutPath(() =>
+      runProvider(
+        { provider: 'antigravity_cli', skipPermissions: false },
+        'understand',
+        { source: '/tmp/nonexistent-xyz.png', question: 'q' },
+      ),
     )
-    assert.equal(typeof r.ok, 'boolean')
-    if (!r.ok) assert.match(r.error ?? '', /agy|error|no such|ENOENT/i)
+    assert.equal(r.ok, false)
+    assert.match(r.error ?? '', /agy not found on PATH/)
   })
 })
