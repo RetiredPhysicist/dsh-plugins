@@ -35,9 +35,9 @@
     "@deepseek-ai/schemastery": "~3.18.5"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
-    "tsx": "^4.19.0",
-    "typescript": "^5.5.0"
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
   },
   "dsh": {
     "manifestVersion": 1,
@@ -51,6 +51,6 @@
     "directory": "packages/dsh-dejavu-memory"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=26"
   }
 }

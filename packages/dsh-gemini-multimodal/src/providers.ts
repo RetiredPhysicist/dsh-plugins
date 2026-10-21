@@ -231,8 +231,8 @@ function runAgy(opts: ProviderOptions, prompt: string): Promise<ProviderResult> 
     let out = ''
     let err = ''
     const timer = setTimeout(() => child.kill('SIGTERM'), REQUEST_TIMEOUT_MS + 30_000)
-    child.stdout?.on('data', (d) => (out += String(d)))
-    child.stderr?.on('data', (d) => (err += String(d)))
+    child.stdout?.on('data', (d: unknown) => (out += String(d)))
+    child.stderr?.on('data', (d: unknown) => (err += String(d)))
     child.on('error', () => {
       clearTimeout(timer)
       resolve({
@@ -243,7 +243,7 @@ function runAgy(opts: ProviderOptions, prompt: string): Promise<ProviderResult> 
           'Alternatively set provider: gemini_api + api_key (aistudio.google.com).',
       })
     })
-    child.on('close', (code) => {
+    child.on('close', (code: number | null) => {
       clearTimeout(timer)
       const text = out.trim()
       if (!text) resolve({ ok: false, error: err.trim() || `agy exited with code ${code}` })
