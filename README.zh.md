@@ -78,7 +78,7 @@ dsh plugin add dsh-codebuddy-sdk
 
 ## 开发
 
-根目录没有 `package.json`。进单个包工作：
+进单个包工作（每个包仍有自己的 lockfile）：
 
 ```bash
 cd packages/<pkg>
@@ -88,13 +88,24 @@ npm test
 npm run build
 ```
 
+根目录 `package.json` 为 private，只为让 [Changesets](https://github.com/changesets/changesets) 发现 `packages/*`。需要 `npx changeset` 时在根目录执行 `npm ci --workspaces=false`。
+
 `dsh-codebuddy-sdk` 另有 `npm run test:ci`（单元测试，不需要 CLI）和 `npm run test:integration`（需要已登录的 `codebuddy` CLI，并设置 `CODEBUDDY_SDK_INTEGRATION=1`）。`dsh-gemini-multimodal` 的 `npm run test:ci` 只跑 smoke 测试。
 
 根 CI（`.github/workflows/ci.yml`）在 `main`、pull request 和 `workflow_dispatch` 上跑。它只对文件有变更的包做类型检查和测试。Node 26。
 
 ## 发布
 
-用该包 `package.json` 里已经写好的版本给当前提交打标签：
+**推荐：** Changesets。在仓库根目录：
+
+```bash
+npm ci --workspaces=false
+npx changeset          # 选包与 bump 类型；把 .changeset/*.md 随 PR 提交
+```
+
+合并进 `main` 后，`.github/workflows/release.yml` 会开 **Version Packages** PR。再合并该 PR，会先构建带 `dist/` 的包，再经 OIDC 执行 `changeset publish`。仓库不存 npm token。
+
+**兼容（未改）：** 用该包 `package.json` 里已经写好的版本给当前提交打标签：
 
 ```bash
 script/release-tag.sh <pkg>
@@ -103,9 +114,7 @@ git push origin <pkg>-v<version>
 
 `script/release-tag.sh dsh-all-search` 读取 `packages/dsh-all-search/package.json`。文件里是 `0.2.20` 时，它创建 `dsh-all-search-v0.2.20`。脚本不会改版本号。
 
-`.github/workflows/publish.yml` 匹配 `dsh-*-v*`，核对标签版本与 `package.json`，构建该包，再用 OIDC 执行 `npm publish --access public`。仓库里不存 npm token。
-
-在这个 monorepo 里发布，走根目录的 workflow。包目录里没有独立的 GitHub workflow 文件。
+`.github/workflows/publish.yml` 匹配 `dsh-*-v*`，核对标签版本与 `package.json`，构建该包，再用 OIDC 执行 `npm publish --access public`。
 
 ## 许可证
 
