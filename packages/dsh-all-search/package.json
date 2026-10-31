@@ -52,5 +52,8 @@
   },
   "engines": {
     "node": ">=26"
+  },
+  "overrides": {
+    "zod": "4.6.7"
   }
 }
