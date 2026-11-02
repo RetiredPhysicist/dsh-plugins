@@ -13,7 +13,7 @@ DeepSeek Harness is text-first. These plugins add the services the host does not
 | [`dsh-all-search`](packages/dsh-all-search) | 0.2.20 | [`dsh-all-search`](https://www.npmjs.com/package/dsh-all-search) | Search provider `anysearch` on `ctx.web`. AnySearch, optional Firecrawl, optional TinyFish. |
 | [`dsh-atuin`](packages/dsh-atuin) | 0.1.8 | [`dsh-atuin`](https://www.npmjs.com/package/dsh-atuin) | Appends each typed prompt to a local [atuin](https://github.com/atuinsh/atuin) history. |
 | [`dsh-cloudflare-browser-run`](packages/dsh-cloudflare-browser-run) | 0.2.13 | [`dsh-cloudflare-browser-run`](https://www.npmjs.com/package/dsh-cloudflare-browser-run) | Tools `browse`, `screenshot`, `pdf`, `crawl`, `crawl_status` via Cloudflare Browser Run. |
-| [`dsh-codebuddy-sdk`](packages/dsh-codebuddy-sdk) | 0.1.7 | [`dsh-codebuddy-sdk`](https://www.npmjs.com/package/dsh-codebuddy-sdk) | LLM adapter on `ctx.llm` for the local CodeBuddy CLI. |
+| [`dsh-codebuddy-sdk`](packages/dsh-codebuddy-sdk) | 0.1.8 | [`dsh-codebuddy-sdk`](https://www.npmjs.com/package/dsh-codebuddy-sdk) | LLM adapter on `ctx.llm` for the local CodeBuddy CLI. |
 | [`dsh-dejavu-memory`](packages/dsh-dejavu-memory) | 0.5.8 | [`dsh-dejavu-memory`](https://www.npmjs.com/package/dsh-dejavu-memory) | Tools `dejavu_boot`, `dejavu_read`, `dejavu_search`, `dejavu_create`, `dejavu_update`, `dejavu_delete`. |
 | [`dsh-gemini-multimodal`](packages/dsh-gemini-multimodal) | 0.1.11 | [`dsh-gemini-multimodal`](https://www.npmjs.com/package/dsh-gemini-multimodal) | Tools `media_understand`, `media_transcribe`, `image_generate`, `read_document`. |
 
