@@ -88,7 +88,6 @@ npm test
 npm run build
 ```
 
-The root `package.json` is private and only declares the workspaces. Each package keeps its own lockfile, so install with `cd packages/<pkg> && npm ci`.
 
 `dsh-codebuddy-sdk` also has `npm run test:ci` (unit tests, no CLI) and `npm run test:integration` (needs a signed-in `codebuddy` CLI and `CODEBUDDY_SDK_INTEGRATION=1`). `dsh-gemini-multimodal` has `npm run test:ci`, which runs the smoke test only.
 

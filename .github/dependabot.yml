@@ -4,7 +4,6 @@ version: 2
 updates:
   - package-ecosystem: "npm"
     directories:
-      - "/"
       - "/packages/dsh-all-search"
       - "/packages/dsh-atuin"
       - "/packages/dsh-cloudflare-browser-run"

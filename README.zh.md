@@ -88,7 +88,6 @@ npm test
 npm run build
 ```
 
-根目录 `package.json` 为 private，只声明 workspace。每个包自带 lockfile，安装仍是 `cd packages/<pkg> && npm ci`。
 
 `dsh-codebuddy-sdk` 另有 `npm run test:ci`（单元测试，不需要 CLI）和 `npm run test:integration`（需要已登录的 `codebuddy` CLI，并设置 `CODEBUDDY_SDK_INTEGRATION=1`）。`dsh-gemini-multimodal` 的 `npm run test:ci` 只跑 smoke 测试。
 
