@@ -88,7 +88,7 @@ npm test
 npm run build
 ```
 
-根目录 `package.json` 为 private，只为让 [Changesets](https://github.com/changesets/changesets) 发现 `packages/*`。需要 `npx changeset` 时在根目录执行 `npm ci --workspaces=false`。
+根目录 `package.json` 为 private，只声明 workspace。每个包自带 lockfile，安装仍是 `cd packages/<pkg> && npm ci`。
 
 `dsh-codebuddy-sdk` 另有 `npm run test:ci`（单元测试，不需要 CLI）和 `npm run test:integration`（需要已登录的 `codebuddy` CLI，并设置 `CODEBUDDY_SDK_INTEGRATION=1`）。`dsh-gemini-multimodal` 的 `npm run test:ci` 只跑 smoke 测试。
 
@@ -96,16 +96,7 @@ npm run build
 
 ## 发布
 
-**推荐：** Changesets。在仓库根目录：
-
-```bash
-npm ci --workspaces=false
-npx changeset          # 选包与 bump 类型；把 .changeset/*.md 随 PR 提交
-```
-
-合并进 `main` 后，`.github/workflows/release.yml` 会开 **Version Packages** PR。再合并该 PR，会先构建带 `dist/` 的包，再经 OIDC 执行 `changeset publish`。仓库不存 npm token。
-
-**兼容（未改）：** 用该包 `package.json` 里已经写好的版本给当前提交打标签：
+先改该包 `package.json` 里的版本，提交后给当前提交打标签：
 
 ```bash
 script/release-tag.sh <pkg>

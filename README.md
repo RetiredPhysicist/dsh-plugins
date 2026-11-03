@@ -88,7 +88,7 @@ npm test
 npm run build
 ```
 
-The root `package.json` is private and only exists so [Changesets](https://github.com/changesets/changesets) can discover `packages/*`. Install root tooling with `npm ci --workspaces=false` when you need `npx changeset`.
+The root `package.json` is private and only declares the workspaces. Each package keeps its own lockfile, so install with `cd packages/<pkg> && npm ci`.
 
 `dsh-codebuddy-sdk` also has `npm run test:ci` (unit tests, no CLI) and `npm run test:integration` (needs a signed-in `codebuddy` CLI and `CODEBUDDY_SDK_INTEGRATION=1`). `dsh-gemini-multimodal` has `npm run test:ci`, which runs the smoke test only.
 
@@ -96,16 +96,7 @@ Root CI (`.github/workflows/ci.yml`) runs on `main`, on pull requests, and on `w
 
 ## Release
 
-**Preferred:** Changesets. From the repo root:
-
-```bash
-npm ci --workspaces=false
-npx changeset          # pick packages + bump type; commit .changeset/*.md in your PR
-```
-
-On merge to `main`, `.github/workflows/release.yml` opens a **Version Packages** PR. Merge that PR to build packages that ship `dist/` and publish with OIDC (`changeset publish`). No npm token is stored in the repository.
-
-**Fallback (unchanged):** tag the current commit with the version already written in that package's `package.json`:
+Bump the version in that package's `package.json`, commit, then tag the current commit:
 
 ```bash
 script/release-tag.sh <pkg>
