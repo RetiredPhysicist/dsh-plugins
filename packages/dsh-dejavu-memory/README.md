@@ -26,7 +26,7 @@ The [OpenAI/Codex plugin](https://github.com/RetiredPhysicist/openai-plugins/tre
 |---|---|
 | `dejavu_boot` | load at session start: `system://boot`, `system://recent/5`, `system://triggers`, then best-effort `system://briefing`; afterward read `system://focus` (recent is a briefing subset — no need to re-read it after boot) |
 | `dejavu_read` | read a memory by URI (`system://…`, `dejavu://agent`, …) |
-| `dejavu_search` | search memories (semantic + keyword / trigger recall via `search_memory`) |
+| `dejavu_search` | search memories via `search_memory`: keyword / trigger recall first, semantic hits when they fall short; `mode` and `prefix` scope the query |
 | `dejavu_create` | create a memory node (`[Baseline]`/`[Deviation]`/`[Result]`/`[Reusable judgment]`) |
 | `dejavu_update` | full replace, patch (old_string/new_string), or append; optional `relation` |
 | `dejavu_delete` | delete a memory by URI (`delete_memory`) |

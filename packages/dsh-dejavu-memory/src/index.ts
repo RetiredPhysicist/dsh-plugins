@@ -311,7 +311,15 @@ export function apply(ctx: Context, config: Config): void {
     parameters: {
       query: { type: 'string', required: true, description: 'Concept or keywords to search for' },
       limit: { type: 'number', description: 'Max results (1-50, default 20)' },
-      domain: { type: 'string', description: 'Domain filter (e.g., dejavu); ignored by the current DejaVu server' },
+      mode: {
+        type: 'string',
+        enum: ['auto', 'fts', 'hybrid'],
+        description: 'Default auto: answers from keywords when they fill the request, then adds semantic hits. hybrid always fuses both; fts is keyword-only and makes no embedding call.',
+      },
+      prefix: {
+        type: 'string',
+        description: 'Project scope: only paths at or below this prefix, e.g. agent/work. One personal tree, no tenants.',
+      },
     },
     output: {
       schema: { type: 'string' },
@@ -325,7 +333,8 @@ export function apply(ctx: Context, config: Config): void {
       const c = await client()
       const arguments_: Record<string, unknown> = { query: args.query }
       if (args.limit !== undefined) arguments_.limit = args.limit
-      if (args.domain) arguments_.domain = args.domain
+      if (args.mode) arguments_.mode = args.mode
+      if (args.prefix) arguments_.prefix = args.prefix
       const data = await c.call('tools/call', {
         name: MCP_TOOLS.search,
         arguments: arguments_,

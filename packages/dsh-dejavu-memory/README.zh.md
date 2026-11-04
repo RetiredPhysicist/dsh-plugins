@@ -26,7 +26,7 @@
 |---|---|
 | `dejavu_boot` | 会话开始加载：`system://boot`、`system://recent/5`、`system://triggers`，再 best-effort 读 `system://briefing`；随后读 `system://focus`（`recent` 是 briefing 子集——boot 之后不必再单独读） |
 | `dejavu_read` | 按 URI 读记忆(`system://…`、`dejavu://agent`…) |
-| `dejavu_search` | 搜记忆(语义 + 关键词 / 触发词召回，服务端 `search_memory`) |
+| `dejavu_search` | 搜记忆(服务端 `search_memory`：关键词/触发词优先，不够再叠语义；`mode` 与 `prefix` 控制范围) |
 | `dejavu_create` | 新建记忆节点(支持 `[Baseline]`/`[Deviation]`/`[Result]`/`[Reusable judgment]`) |
 | `dejavu_update` | 全文替换、patch(old_string/new_string)或 append;可选 `relation` |
 | `dejavu_delete` | 按 URI 删除记忆(`delete_memory`) |
