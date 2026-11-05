@@ -1,6 +1,6 @@
 {
   "name": "dsh-gemini-multimodal",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "DeepSeek Harness plugin: multimodal tools (image/audio/video/document understanding, transcription, image generation) via Gemini API or the local Antigravity CLI.",
   "type": "module",
   "main": "dist/index.js",
@@ -36,9 +36,9 @@
     "node": ">=26"
   },
   "dependencies": {
-    "@deepseek-ai/cordis": "~4.0.5",
-    "@deepseek-ai/dsh-tools": "0.2.1-rc.5",
-    "@deepseek-ai/schemastery": "~3.18.5"
+    "@deepseek-ai/cordis": "~4.1.0",
+    "@deepseek-ai/dsh-tools": "0.2.2-rc.1",
+    "@deepseek-ai/schemastery": "~3.19.0"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",

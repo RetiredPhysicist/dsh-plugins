@@ -1,6 +1,6 @@
 {
   "name": "dsh-atuin",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "DeepSeek Harness plugin: every user prompt you type (in the web UI) is appended to your atuin shell history, so it shows up in atuin search and shell integration.",
   "type": "module",
   "main": "dist/index.js",
@@ -30,8 +30,8 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@deepseek-ai/cordis": "~4.0.5",
-    "@deepseek-ai/schemastery": "~3.18.5"
+    "@deepseek-ai/cordis": "~4.1.0",
+    "@deepseek-ai/schemastery": "~3.19.0"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",
