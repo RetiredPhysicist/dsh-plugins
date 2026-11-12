@@ -10,12 +10,12 @@ DeepSeek Harness is text-first. These plugins add the services the host does not
 
 | package | version | npm | what it adds |
 | --- | --- | --- | --- |
-| [`dsh-all-search`](packages/dsh-all-search) | 0.2.21 | [`dsh-all-search`](https://www.npmjs.com/package/dsh-all-search) | Search provider `anysearch` on `ctx.web`. AnySearch, optional Firecrawl, optional TinyFish. |
+| [`dsh-all-search`](packages/dsh-all-search) | 0.2.22 | [`dsh-all-search`](https://www.npmjs.com/package/dsh-all-search) | Search provider `anysearch` on `ctx.web`. AnySearch, optional Firecrawl, optional TinyFish. |
 | [`dsh-atuin`](packages/dsh-atuin) | 0.1.9 | [`dsh-atuin`](https://www.npmjs.com/package/dsh-atuin) | Appends each typed prompt to a local [atuin](https://github.com/atuinsh/atuin) history. |
-| [`dsh-cloudflare-browser-run`](packages/dsh-cloudflare-browser-run) | 0.2.14 | [`dsh-cloudflare-browser-run`](https://www.npmjs.com/package/dsh-cloudflare-browser-run) | Tools `browse`, `screenshot`, `pdf`, `crawl`, `crawl_status` via Cloudflare Browser Run. |
-| [`dsh-codebuddy-sdk`](packages/dsh-codebuddy-sdk) | 0.1.9 | [`dsh-codebuddy-sdk`](https://www.npmjs.com/package/dsh-codebuddy-sdk) | LLM adapter on `ctx.llm` for the local CodeBuddy CLI. |
-| [`dsh-dejavu-memory`](packages/dsh-dejavu-memory) | 0.5.9 | [`dsh-dejavu-memory`](https://www.npmjs.com/package/dsh-dejavu-memory) | Tools `dejavu_boot`, `dejavu_read`, `dejavu_search`, `dejavu_create`, `dejavu_update`, `dejavu_delete`. |
-| [`dsh-gemini-multimodal`](packages/dsh-gemini-multimodal) | 0.1.12 | [`dsh-gemini-multimodal`](https://www.npmjs.com/package/dsh-gemini-multimodal) | Tools `media_understand`, `media_transcribe`, `image_generate`, `read_document`. |
+| [`dsh-cloudflare-browser-run`](packages/dsh-cloudflare-browser-run) | 0.2.15 | [`dsh-cloudflare-browser-run`](https://www.npmjs.com/package/dsh-cloudflare-browser-run) | Tools `browse`, `screenshot`, `pdf`, `crawl`, `crawl_status` via Cloudflare Browser Run. |
+| [`dsh-codebuddy-sdk`](packages/dsh-codebuddy-sdk) | 0.1.10 | [`dsh-codebuddy-sdk`](https://www.npmjs.com/package/dsh-codebuddy-sdk) | LLM adapter on `ctx.llm` for the local CodeBuddy CLI. |
+| [`dsh-dejavu-memory`](packages/dsh-dejavu-memory) | 0.5.10 | [`dsh-dejavu-memory`](https://www.npmjs.com/package/dsh-dejavu-memory) | Tools `dejavu_boot`, `dejavu_read`, `dejavu_search`, `dejavu_create`, `dejavu_update`, `dejavu_delete`. |
+| [`dsh-gemini-multimodal`](packages/dsh-gemini-multimodal) | 0.1.13 | [`dsh-gemini-multimodal`](https://www.npmjs.com/package/dsh-gemini-multimodal) | Tools `media_understand`, `media_transcribe`, `image_generate`, `read_document`. |
 
 Versions match `packages/<name>/package.json` in this tree. Every package has an English and a Chinese README, for example `packages/dsh-all-search/README.md` and `README.zh.md`.
 
@@ -102,7 +102,7 @@ script/release-tag.sh <pkg>
 git push origin <pkg>-v<version>
 ```
 
-`script/release-tag.sh dsh-all-search` reads `packages/dsh-all-search/package.json` and creates `dsh-all-search-v0.2.21` when that file says `0.2.21`. The tag does not bump the version.
+`script/release-tag.sh dsh-all-search` reads `packages/dsh-all-search/package.json` and creates `dsh-all-search-v0.2.22` when that file says `0.2.22`. The tag does not bump the version.
 
 `.github/workflows/publish.yml` matches `dsh-*-v*`, checks the tag version against `package.json`, builds that package, and runs `npm publish --access public` with OIDC.
 

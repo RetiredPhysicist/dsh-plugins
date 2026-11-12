@@ -233,9 +233,10 @@ class CodeBuddyAdapter extends LlmAdapter {
     } catch (error) {
       conversation.bridge.failAll(`CodeBuddy provider "${provider}" failed: ${errorMessage(error)}`)
       await this.finishConversation(key)
-      throw new LlmError(`CodeBuddy provider "${provider}" failed: ${errorMessage(error)}`, 'CODEBUDDY_ERROR', {
-        cause: error instanceof Error ? error : undefined,
-      })
+      throw LlmError.fromFailure(
+        { message: `CodeBuddy provider "${provider}" failed: ${errorMessage(error)}`, code: 'CODEBUDDY_ERROR' },
+        error instanceof Error ? error : undefined,
+      )
     }
   }
 
