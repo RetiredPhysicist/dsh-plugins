@@ -2,6 +2,10 @@
 
 [中文](README.zh.md) · [English](README.md)
 
+[![CI](https://github.com/RetiredPhysicist/dsh-plugins/actions/workflows/ci.yml/badge.svg)](https://github.com/RetiredPhysicist/dsh-plugins/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/dsh-all-search?label=npm)](https://www.npmjs.com/package/dsh-all-search)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](#%E8%AE%B8%E5%8F%AF%E8%AF%81)
+
 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（`dsh`）的插件集。每个包都是 `packages/` 下的一个 Cordis 插件，保留自己的 npm 名和版本。
 
 DeepSeek Harness 以文本为主。这些插件补上宿主未自带的能力：网页搜索、远程浏览器、shell 历史记录、长期记忆、多模态工具，以及一个额外的 LLM 提供方。

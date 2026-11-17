@@ -2,6 +2,10 @@
 
 [English](README.md) · [中文](README.zh.md)
 
+[![CI](https://github.com/RetiredPhysicist/dsh-plugins/actions/workflows/ci.yml/badge.svg)](https://github.com/RetiredPhysicist/dsh-plugins/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/dsh-all-search?label=npm)](https://www.npmjs.com/package/dsh-all-search)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](#license)
+
 Plugins for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (`dsh`). Each package is a Cordis plugin under `packages/`, with its own npm name and version.
 
 DeepSeek Harness is text-first. These plugins add the services the host does not ship: web search, a remote browser, shell-history recording, long-term memory, multimodal tools, and one extra LLM provider.
