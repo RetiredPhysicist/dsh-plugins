@@ -142,4 +142,15 @@ describe('translateStep', () => {
       failure: { message: 'upstream down', code: 'CODEBUDDY_ERROR' },
     })
   })
+
+  it('reports a refusal stop reason as CONTENT_REFUSED', async () => {
+    const { chunks } = await collect([
+      assistant([{ type: 'text', text: '' }], 'refusal'),
+      successResult(),
+    ])
+    assert.deepEqual(chunks.at(-1).reason, {
+      kind: 'error',
+      failure: { message: 'CodeBuddy refused the request', code: 'CONTENT_REFUSED' },
+    })
+  })
 })

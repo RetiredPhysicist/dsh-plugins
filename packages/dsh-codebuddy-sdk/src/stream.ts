@@ -39,7 +39,7 @@ function mapStopReason(reason: StopReason | null | undefined): FinishReason {
     case 'max_tokens':
       return { kind: 'max-tokens' }
     case 'refusal':
-      return { kind: 'error', failure: { message: 'CodeBuddy refused the request', code: 'REFUSAL' } }
+      return { kind: 'error', failure: { message: 'CodeBuddy refused the request', code: 'CONTENT_REFUSED' } }
     default:
       return { kind: 'stop' }
   }
@@ -62,6 +62,7 @@ export async function* translateStep(
   callerSignal?: AbortSignal,
 ): AsyncGenerator<StreamChunk, StepStatus, void> {
   let sawToolCall = false
+  let stopReason: StopReason | undefined
   const toolIndex = new Map<number, { id: string; name: string }>()
   const argumentBuffers = new Map<number, string>()
 
@@ -142,6 +143,7 @@ export async function* translateStep(
         }
       }
       if (!sawToolCall && message.message.stop_reason === 'tool_use') sawToolCall = true
+      stopReason = message.message.stop_reason
       // A tool-call turn ends here: control returns to the Harness loop, which
       // executes the tools and calls again with their results.
       if (sawToolCall) {
@@ -159,7 +161,7 @@ export async function* translateStep(
           : message.errors?.join('; ') ?? message.subtype
         yield { type: 'finish', reason: { kind: 'error', failure: { message: detail, code: 'CODEBUDDY_ERROR' } } }
       } else {
-        yield { type: 'finish', reason: mapStopReason(sawToolCall ? 'tool_use' : 'end_turn') }
+        yield { type: 'finish', reason: mapStopReason(stopReason ?? (sawToolCall ? 'tool_use' : 'end_turn')) }
       }
       return { awaitingTool: sawToolCall, ended: true }
     }
