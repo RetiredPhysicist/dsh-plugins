@@ -249,3 +249,46 @@ describe('deepseek wrapper routing', () => {
     assert.equal(fetchRegistered.length, 0)
   })
 })
+
+
+describe('anonymous Parallel fallback', () => {
+  it('keeps one search provider and tries Parallel only after existing sources fail', async () => {
+    const { ctx, registered, fetchRegistered } = makeCtx()
+    applySearch(ctx, {})
+    const mock = mockFetch(async (url, init) => {
+      assert.ok(!Object.keys(init.headers).some((h) => /authorization|api.key|cookie/i.test(h)))
+      if (String(url).includes('firecrawl')) return new Response('', { status: 429 })
+      assert.match(String(url), /^https:\/\/mcp\.parallel\.ai\/mcp\?tools=web_search,web_fetch$/)
+      assert.equal(JSON.parse(init.body).params.name, 'web_search')
+      return new Response(JSON.stringify({ result: { structuredContent: { results: [{ title: 'Parallel', url: 'https://example.com', excerpts: ['free source'] }] } } }))
+    })
+    try {
+      assert.equal(registered.length, 1)
+      assert.equal(fetchRegistered.length, 0)
+      const result = await registered[0].search({ query: 'test' })
+      assert.equal(result.sources[0].title, 'Parallel')
+      assert.equal(mock.calls.length, 2)
+      assert.ok(mock.calls.every((c) => !c.url.includes('deepseek')))
+    } finally { mock.restore() }
+  })
+
+  it('falls back on empty existing results and exposes fetch only by opt-in', async () => {
+    const { ctx, registered, fetchRegistered } = makeCtx()
+    applySearch(ctx, { parallel_fetch: true })
+    assert.equal(fetchRegistered.length, 1)
+    assert.equal(fetchRegistered[0].id, 'parallel')
+    const mock = mockFetch(async (url, init) => {
+      if (String(url).includes('firecrawl')) return new Response(JSON.stringify({ data: [] }))
+      const isFetch = JSON.parse(init.body).params.name === 'web_fetch'
+      return new Response(JSON.stringify({ result: { structuredContent: { results: isFetch
+        ? [{ url: 'https://example.com', full_content: 'markdown' }]
+        : [{ url: 'https://example.com', title: 'P', excerpts: [] }] } } }))
+    })
+    try {
+      assert.equal((await registered[0].search({ query: 'test' })).sources.length, 1)
+      const page = await fetchRegistered[0].fetch({ url: 'https://example.com' })
+      assert.equal(page.statusCode, 200)
+      assert.equal(page.body.content, 'markdown')
+    } finally { mock.restore() }
+  })
+})

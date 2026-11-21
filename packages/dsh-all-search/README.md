@@ -18,7 +18,7 @@ With `tinyfish_api_key`, news and academic queries route to TinyFish first (`dom
 
 ## Why
 
-dsh ships Exa / Perplexity / DeepSeek search. This plugin adds AnySearch: one key, many backends, no per-backend credentials. Without an AnySearch key, Firecrawl (and optional DeepSeek/TinyFish) still work so the provider is never a no-op.
+dsh ships Exa / Perplexity / DeepSeek search. This plugin adds AnySearch and anonymous Parallel: one key, many backends, no per-backend credentials. Without an AnySearch key, Firecrawl (and optional DeepSeek/TinyFish) still work so the provider is never a no-op.
 
 ## Quick start
 
@@ -43,11 +43,12 @@ The provider registers as `anysearch` on `ctx.web` -- the built-in `web_search` 
 | `tinyfish_api_key` | - | optional TinyFish key. Enables free news/academic search and full-browser fetch. |
 | `tinyfish_fetch` | - | register TinyFish as the fetch provider (default `false`; the host usually supplies a local fetch provider) |
 | `deepseek_api_key` | - | optional DeepSeek key. Enables DeepSeek Search inside the `anysearch` wrapper (`POST /v1/tools/search`). |
+| `parallel_fetch` | - | register anonymous/free Parallel as a fetch provider (default `false`; pin host `fetchProvider` to `parallel` to avoid ambiguity) |
 | `deepseek_fetch` | - | register DeepSeek as a fetch provider (default `false`; same reason as `tinyfish_fetch`) |
 
 Without an AnySearch key the provider still reports `available() = true` and searches Firecrawl keyless. Hosts that share an egress IP (NAT, CI) share those daily credits; set `firecrawl_api_key` for a private quota.
 
-Search routing: developer queries → Developer Index → TinyFish (news/academic) → DeepSeek → AnySearch → TinyFish → Firecrawl. Every key is optional, so any subset of providers still answers queries.
+Search routing: developer queries → Developer Index → TinyFish (news/academic) → DeepSeek → AnySearch → TinyFish → Firecrawl → anonymous Parallel. Errors/empty results continue to the next source. Every key is optional, so any subset of providers still answers queries.
 
 ## Privacy
 
@@ -75,3 +76,17 @@ node --import tsx tests/real/real-search.mjs
 ## License
 
 MIT
+
+## Parallel: free anonymous fallback
+
+Parallel is included inside the **single** `anysearch` search wrapper, after all existing sources (including keyless Firecrawl) fail or return no results. No extra search provider is registered, avoiding `WEB_PROVIDER_AMBIGUOUS`.
+
+- Fixed official URL: `https://mcp.parallel.ai/mcp?tools=web_search,web_fetch`.
+- Never sends Authorization/API-key/cookie headers or reads any Parallel key/environment variable. No OAuth, login, connector install or paid API upgrade.
+- Supports JSON and SSE MCP responses. 12-second timeout including response body; caller cancellation; no automatic retries. HTTP 429 applies shared search/fetch Retry-After cooldown (1 second–5 minutes, default 60 seconds). If every source is exhausted, the final error is surfaced rather than charging for a paid upgrade.
+- Optional `parallel_fetch: true` registers `parallel` fetch. Leave it off when using the host's local fetch, or pin the host fetch provider explicitly to `parallel`. Do not enable multiple fetch providers without choosing one.
+- Anonymous limits are lower and no exact quota is promised. OAuth/API keys are billed at API rates after included credits; they are unsupported by this integration.
+- Existing providers and keys are retained. This patch adds **no DeepSeek key** and does not enable its paid API ($0.75/1,000 successful Search or Fetch requests). Existing explicit `deepseek_api_key` behavior is unchanged. A free-only setup must leave existing paid-provider keys unset.
+- Build/install this source package and reload dsh to use it; no npm release, remote-machine update or production deployment is performed by this commit.
+
+Docs: https://docs.parallel.ai/integrations/mcp/quickstart

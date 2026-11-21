@@ -73,3 +73,16 @@ node --import tsx tests/real/real-search.mjs
 ## License
 
 MIT
+
+
+## Parallel 免费匿名后备
+
+搜索在所有原有来源（含 Firecrawl）报错或无结果后尝试 Parallel，仍只注册一个搜索包装器，避免多提供商冲突。固定官方 MCP：`https://mcp.parallel.ai/mcp?tools=web_search,web_fetch`。
+
+不读 Parallel key，不发送 Authorization/API-key/Cookie，不登录、不接 OAuth、不自动升级付费；环境里即使有 Parallel key 也忽略。请求含响应体限时 12 秒，可取消，不重试；429 按 Retry-After 冷却 1 秒至 5 分钟（默认 60 秒）。免费匿名额度有限，不保证具体次数或可用性。
+
+抓取可用 `parallel_fetch: true` 显式开启，但默认关闭以保留宿主本地抓取。开启后应将宿主 `fetchProvider` 指定为 `parallel`，不要无选择地同时开启多个抓取来源。
+
+保留原有来源与配置，不添加 DeepSeek key、不启用其收费接口；若原来已显式配置付费来源，它们的行为不变。DeepSeek Search/Fetch 各 $0.75/千次成功请求。纯免费使用需不配置付费来源 key。
+
+本变更仅源码：构建安装后重载 dsh；没有发布 npm、更新远端机器或部署生产。官方说明：https://docs.parallel.ai/integrations/mcp/quickstart

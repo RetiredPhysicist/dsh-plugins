@@ -34,6 +34,9 @@ import type {
   WebSearchSource,
 } from '@deepseek-ai/dsh-web'
 
+import { searchParallel, fetchParallel } from './parallel-mcp.js'
+export { PARALLEL_MCP_URL } from './parallel-mcp.js'
+
 export const name = 'all-search'
 export const inject = ['web']
 
@@ -61,9 +64,12 @@ export interface Config {
    * Enable when you want DeepSeek tools/fetch (same key as search).
    */
   deepseek_fetch?: boolean
+  /** Optional anonymous Parallel fetch; pin fetchProvider=parallel to avoid host ambiguity. */
+  parallel_fetch?: boolean
 }
 
 export const Config: z<Config> = z.object({
+  parallel_fetch: z.boolean().description('Register anonymous/free Parallel fetch (default false; pin fetchProvider=parallel)'),
   api_key: z.string().description('AnySearch API key (optional — without it, Firecrawl keyless search is used)'),
   base_url: z.string().description('AnySearch MCP endpoint override (default https://api.anysearch.com/mcp)'),
   firecrawl_api_key: z.string().description('Firecrawl API key (optional) — Bearer for Firecrawl quota; also enables Developer Index when AnySearch is configured'),
@@ -440,7 +446,13 @@ export function apply(ctx: Context, config: Config): void {
         }
       }
       if (config.api_key) {
-        return anysearch.search(request, signal)
+        try {
+          const result = await anysearch.search(request, signal)
+          if (result.sources.length > 0) return result
+        } catch {
+          signal?.throwIfAborted()
+          // Preserve the remaining sources, including the free Parallel fallback.
+        }
       }
       if (tinyfish) {
         try {
@@ -450,15 +462,35 @@ export function apply(ctx: Context, config: Config): void {
           // fall through to Firecrawl
         }
       }
-      return firecrawl.search(request, signal)
+      try {
+        const result = await firecrawl.search(request, signal)
+        if (result.sources.length > 0) return result
+      } catch {
+        signal?.throwIfAborted()
+      }
+      return { sources: await searchParallel(request.query, request.maxResults ?? 5, signal), truncated: false }
     },
   }
   ctx.web.registerSearchProvider(wrapper)
 
+  if (config.parallel_fetch && typeof ctx.web.registerFetchProvider === 'function') {
+    ctx.web.registerFetchProvider(new ParallelFetchProvider())
+  }
   if (config.tinyfish_fetch && config.tinyfish_api_key && typeof ctx.web.registerFetchProvider === 'function') {
     ctx.web.registerFetchProvider(new TinyFishFetchProvider(config.tinyfish_api_key))
   }
   if (config.deepseek_fetch && config.deepseek_api_key && typeof ctx.web.registerFetchProvider === 'function') {
     ctx.web.registerFetchProvider(new DeepSeekFetchProvider(config.deepseek_api_key))
+  }
+}
+
+/** Opt-in only: the Harness normally supplies its own local fetch provider. */
+export class ParallelFetchProvider implements WebFetchProvider {
+  readonly id = 'parallel'
+  available(): boolean { return true }
+  async fetch(request: WebFetchRequest, signal?: AbortSignal): Promise<WebFetchResult> {
+    const page = await fetchParallel(request.url, signal)
+    if (!page) throw new Error('Parallel returned no page content')
+    return { url: request.url, statusCode: 200, body: { kind: 'text', content: page.content }, truncated: page.content.length >= 50000 }
   }
 }
